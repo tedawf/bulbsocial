@@ -2,7 +2,7 @@ ALTER TABLE posts
 DROP CONSTRAINT fk_user;
 
 ALTER TABLE posts
-DROP COLUMN tags;
+DROP COLUMN updated_at;
 
 ALTER TABLE posts
-DROP COLUMN updated_at;
+DROP COLUMN tags;
