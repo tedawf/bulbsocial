@@ -35,6 +35,9 @@ WHERE
 ORDER BY
 	c.created_at DESC;`
 
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
 	rows, err := s.db.QueryContext(ctx, query, postID)
 	if err != nil {
 		return nil, err
