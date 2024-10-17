@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func (app *application) handleHealthCheck(w http.ResponseWriter, r *http.Request) {
+func (app *application) healthCheck(w http.ResponseWriter, r *http.Request) {
 	data := map[string]string{
 		"status":  "ok",
 		"env":     app.config.env,
