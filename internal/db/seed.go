@@ -7,7 +7,7 @@ import (
 
 	"math/rand"
 
-	"github.com/tedawf/tt4d/internal/store"
+	"github.com/tedawf/tradebulb/internal/store"
 )
 
 var usernames = []string{

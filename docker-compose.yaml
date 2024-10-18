@@ -3,7 +3,7 @@ services:
     image: postgres:16.3
     container_name: postgres-db
     environment:
-      POSTGRES_DB: tt4d_local
+      POSTGRES_DB: tradebulb_local
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: adminpassword
     volumes:

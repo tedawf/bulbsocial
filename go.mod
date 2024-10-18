@@ -1,4 +1,4 @@
-module github.com/tedawf/tt4d
+module github.com/tedawf/tradebulb
 
 go 1.23.2
 

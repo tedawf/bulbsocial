@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/tedawf/tt4d/internal/db"
-	"github.com/tedawf/tt4d/internal/env"
-	"github.com/tedawf/tt4d/internal/store"
+	"github.com/tedawf/tradebulb/internal/db"
+	"github.com/tedawf/tradebulb/internal/env"
+	"github.com/tedawf/tradebulb/internal/store"
 )
 
 const version = "0.0.1"
@@ -14,7 +14,7 @@ func main() {
 	cfg := config{
 		addr: env.GetString("ADDR", ":8080"),
 		db: dbConfig{
-			addr:         env.GetString("DB_ADDR", "postgres://admin:adminpassword@localhost/tt4d_local?sslmode=disable"),
+			addr:         env.GetString("DB_ADDR", "postgres://admin:adminpassword@localhost/tradebulb_local?sslmode=disable"),
 			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 30),
 			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONNS", 30),
 			maxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "15m"),

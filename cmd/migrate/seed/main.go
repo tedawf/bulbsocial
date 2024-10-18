@@ -3,13 +3,13 @@ package main
 import (
 	"log"
 
-	"github.com/tedawf/tt4d/internal/db"
-	"github.com/tedawf/tt4d/internal/env"
-	"github.com/tedawf/tt4d/internal/store"
+	"github.com/tedawf/tradebulb/internal/db"
+	"github.com/tedawf/tradebulb/internal/env"
+	"github.com/tedawf/tradebulb/internal/store"
 )
 
 func main() {
-	addr := env.GetString("DB_ADDR", "postgres://admin:adminpassword@localhost/tt4d_local?sslmode=disable")
+	addr := env.GetString("DB_ADDR", "postgres://admin:adminpassword@localhost/tradebulb_local?sslmode=disable")
 	conn, err := db.New(addr, 3, 3, "15m")
 	if err != nil {
 		log.Fatal(err)
