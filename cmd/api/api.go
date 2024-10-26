@@ -49,7 +49,7 @@ func (app *application) mount() http.Handler {
 			r.Post("/", app.createPost)
 
 			r.Route("/{postID}", func(r chi.Router) {
-				r.Use(app.postsContextMiddleware)
+				r.Use(app.postContextMiddleware)
 
 				r.Get("/", app.getPost)
 				r.Delete("/", app.deletePost)
@@ -59,7 +59,11 @@ func (app *application) mount() http.Handler {
 
 		r.Route("/users", func(r chi.Router) {
 			r.Route("/{userID}", func(r chi.Router) {
+				r.Use(app.userContextMiddleware)
+
 				r.Get("/", app.getUser)
+				r.Put("/follow", app.followUser)
+				r.Put("/unfollow", app.unfollowUser)
 			})
 		})
 	})
