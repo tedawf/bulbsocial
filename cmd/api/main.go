@@ -1,16 +1,18 @@
 package main
 
 import (
-	"log"
-
 	"github.com/tedawf/tradebulb/internal/db"
 	"github.com/tedawf/tradebulb/internal/env"
 	"github.com/tedawf/tradebulb/internal/store"
+	"go.uber.org/zap"
 )
 
 const version = "0.0.1"
 
 func main() {
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
 	cfg := config{
 		addr: env.GetString("ADDR", ":8080"),
 		db: dbConfig{
@@ -29,20 +31,21 @@ func main() {
 		cfg.db.maxIdleTime,
 	)
 	if err != nil {
-		log.Panic(err)
+		logger.Fatal(err)
 	}
 
 	defer db.Close()
-	log.Printf("Database connection pool established")
+	logger.Info("Database connection pool established")
 
 	store := store.NewStorage(db)
 
 	app := &application{
 		config: cfg,
 		store:  store,
+		logger: logger,
 	}
 
 	mux := app.mount()
 
-	log.Fatal(app.run(mux))
+	logger.Fatal(app.run(mux))
 }
