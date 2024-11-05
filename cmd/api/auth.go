@@ -15,6 +15,11 @@ type RegisterUserPayload struct {
 	Password string `json:"password" validate:"required,min=3,max=100"`
 }
 
+type UserWithToken struct {
+	*store.User
+	Token string `json:"token"`
+}
+
 func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 	var payload RegisterUserPayload
 	if err := readJSON(w, r, &payload); err != nil {
@@ -47,7 +52,7 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 	hashToken := hex.EncodeToString(hash[:])
 
 	// store user
-	err := app.store.Users.CreateAndVerify(ctx, user, hashToken, app.config.mail.exp)
+	err := app.store.Users.CreateAndInvite(ctx, user, hashToken, app.config.mail.exp)
 	if err != nil {
 		switch err {
 		case store.ErrDuplicateEmail:
@@ -60,9 +65,14 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userWithToken := UserWithToken{
+		User:  user,
+		Token: plainToken,
+	}
+
 	// send email
 
-	if err := app.jsonResponse(w, http.StatusCreated, nil); err != nil {
+	if err := app.jsonResponse(w, http.StatusCreated, userWithToken); err != nil {
 		app.internalServerError(w, r, err)
 	}
 }

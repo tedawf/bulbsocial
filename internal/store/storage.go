@@ -24,7 +24,8 @@ type Storage struct {
 	Users interface {
 		Create(context.Context, *sql.Tx, *User) error
 		GetByID(context.Context, int64) (*User, error)
-		CreateAndVerify(context.Context, *User, string, time.Duration) error
+		CreateAndInvite(context.Context, *User, string, time.Duration) error
+		Verify(context.Context, string) error
 	}
 	Comments interface {
 		Create(context.Context, *Comment) error

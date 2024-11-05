@@ -75,6 +75,25 @@ func (app *application) unfollowUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *application) verifyUser(w http.ResponseWriter, r *http.Request) {
+	token := chi.URLParam(r, "token")
+
+	err := app.store.Users.Verify(r.Context(), token)
+	if err != nil {
+		switch err {
+		case store.ErrNotFound:
+			app.notFoundError(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+		}
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusNoContent, nil); err != nil {
+		app.internalServerError(w, r, err)
+	}
+}
+
 func (app *application) userContextMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
