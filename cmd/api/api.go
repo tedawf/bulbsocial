@@ -6,19 +6,27 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/tedawf/tradebulb/internal/mail"
 	"github.com/tedawf/tradebulb/internal/store"
 	"go.uber.org/zap"
 )
 
 type config struct {
-	addr string
-	db   dbConfig
-	env  string
-	mail mailConfig
+	addr        string
+	db          dbConfig
+	env         string
+	mail        mailConfig
+	frontendURL string
 }
 
 type mailConfig struct {
-	exp time.Duration
+	sendGrid  sendGridConfig
+	fromEmail string
+	exp       time.Duration
+}
+
+type sendGridConfig struct {
+	apiKey string
 }
 
 type dbConfig struct {
@@ -32,6 +40,7 @@ type application struct {
 	config config
 	store  store.Storage
 	logger *zap.SugaredLogger
+	mailer mail.Client
 }
 
 func (app *application) mount() http.Handler {
