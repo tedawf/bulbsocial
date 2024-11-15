@@ -32,11 +32,13 @@ func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user := getUserFromCtx(r)
+
 	post := &store.Post{
 		Title:   payload.Title,
 		Content: payload.Content,
 		Tags:    payload.Tags,
-		UserID:  1, // change after auth
+		UserID:  user.ID,
 	}
 
 	if err := app.store.Posts.Create(r.Context(), post); err != nil {
