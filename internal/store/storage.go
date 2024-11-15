@@ -27,6 +27,7 @@ type Storage struct {
 		CreateAndInvite(context.Context, *User, string, time.Duration) error
 		Verify(context.Context, string) error
 		Delete(context.Context, int64) error
+		GetByEmail(context.Context, string) (*User, error)
 	}
 	Comments interface {
 		Create(context.Context, *Comment) error

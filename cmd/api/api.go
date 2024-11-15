@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/tedawf/tradebulb/internal/auth"
 	"github.com/tedawf/tradebulb/internal/mail"
 	"github.com/tedawf/tradebulb/internal/store"
 	"go.uber.org/zap"
@@ -17,6 +18,23 @@ type config struct {
 	env         string
 	mail        mailConfig
 	frontendURL string
+	auth        authConfig
+}
+
+type authConfig struct {
+	basic basicConfig
+	token tokenConfig
+}
+
+type tokenConfig struct {
+	secret string
+	exp    time.Duration
+	iss    string
+}
+
+type basicConfig struct {
+	user string
+	pass string
 }
 
 type mailConfig struct {
@@ -37,10 +55,11 @@ type dbConfig struct {
 }
 
 type application struct {
-	config config
-	store  store.Storage
-	logger *zap.SugaredLogger
-	mailer mail.Client
+	config        config
+	store         store.Storage
+	logger        *zap.SugaredLogger
+	mailer        mail.Client
+	authenticator auth.Authenticator
 }
 
 func (app *application) mount() http.Handler {
@@ -58,7 +77,7 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	r.Route("/v1", func(r chi.Router) {
-		r.Get("/health", app.healthCheck)
+		r.With(app.BasicAuthMiddleware()).Get("/health", app.healthCheck)
 
 		r.Route("/posts", func(r chi.Router) {
 			r.Post("/", app.createPost)
@@ -91,6 +110,7 @@ func (app *application) mount() http.Handler {
 		// public
 		r.Route("/auth", func(r chi.Router) {
 			r.Post("/user", app.registerUser)
+			r.Post("/token", app.createToken)
 		})
 	})
 
