@@ -39,6 +39,9 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 	user := &store.User{
 		Username: payload.Username,
 		Email:    payload.Email,
+		Role: store.Role{
+			Name: "user",
+		},
 	}
 
 	// hash password
