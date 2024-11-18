@@ -16,9 +16,6 @@ import (
 const version = "0.0.1"
 
 func main() {
-	logger := zap.Must(zap.NewProduction()).Sugar()
-	defer logger.Sync()
-
 	cfg := config{
 		addr:        env.GetString("ADDR", ":8080"),
 		frontendURL: env.GetString("FRONTEND_URL", "localhost:4000"),
@@ -55,6 +52,11 @@ func main() {
 		},
 	}
 
+	// logger
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
+	// db
 	db, err := db.New(
 		cfg.db.addr,
 		cfg.db.maxOpenConns,
@@ -81,8 +83,10 @@ func main() {
 
 	cacheStorage := cache.NewRedisStorage(rdb)
 
+	// email
 	mailer := mail.NewSendGrid(cfg.mail.sendGrid.apiKey, cfg.mail.fromEmail)
 
+	// auth
 	jwtAuthenticator := auth.NewJWTAuthenticator(
 		cfg.auth.token.secret,
 		cfg.auth.token.iss,
