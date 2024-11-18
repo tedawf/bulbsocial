@@ -9,6 +9,7 @@ import (
 	"github.com/tedawf/tradebulb/internal/auth"
 	"github.com/tedawf/tradebulb/internal/mail"
 	"github.com/tedawf/tradebulb/internal/store"
+	"github.com/tedawf/tradebulb/internal/store/cache"
 	"go.uber.org/zap"
 )
 
@@ -19,6 +20,14 @@ type config struct {
 	mail        mailConfig
 	frontendURL string
 	auth        authConfig
+	redisCfg    redisConfig
+}
+
+type redisConfig struct {
+	addr    string
+	pw      string
+	db      int
+	enabled bool
 }
 
 type authConfig struct {
@@ -60,6 +69,7 @@ type application struct {
 	logger        *zap.SugaredLogger
 	mailer        mail.Client
 	authenticator auth.Authenticator
+	cacheStorage  cache.Storage
 }
 
 func (app *application) mount() http.Handler {

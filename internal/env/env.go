@@ -20,10 +20,24 @@ func GetInt(key string, fallback int) int {
 		return fallback
 	}
 
-	valAsInt, err := strconv.Atoi(val)
+	intVal, err := strconv.Atoi(val)
 	if err != nil {
 		return fallback
 	}
 
-	return valAsInt
+	return intVal
+}
+
+func GetBool(key string, fallback bool) bool {
+	val, ok := os.LookupEnv(key)
+	if !ok {
+		return fallback
+	}
+
+	boolVal, err := strconv.ParseBool(val)
+	if err != nil {
+		return fallback
+	}
+
+	return boolVal
 }

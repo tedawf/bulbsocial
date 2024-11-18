@@ -96,8 +96,8 @@ RETURNING
 }
 
 func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
-	query := `SELECT users.id, username, email, password, created_at, roles.* FROM users 
-	JOIN roles on users.role_id = roles.id
+	query := `SELECT users.id, username, email, password, created_at, is_verified, role_id, roles.* FROM users 
+	JOIN roles ON users.role_id = roles.id
 	WHERE users.id = $1 AND is_verified = true;`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
@@ -110,6 +110,8 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 		&user.Email,
 		&user.Password.hash,
 		&user.CreatedAt,
+		&user.IsVerified,
+		&user.RoleID,
 		&user.Role.ID,
 		&user.Role.Name,
 		&user.Role.Level,

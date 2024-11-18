@@ -84,7 +84,7 @@ func (app *application) TokenAuthMiddleware() func(http.Handler) http.Handler {
 
 			ctx := r.Context()
 
-			user, err := app.store.Users.GetByID(ctx, userID)
+			user, err := app.fetchUser(ctx, userID)
 			if err != nil {
 				app.unauthorizedError(w, r, err)
 				return
@@ -94,6 +94,33 @@ func (app *application) TokenAuthMiddleware() func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+func (app *application) fetchUser(ctx context.Context, userID int64) (*store.User, error) {
+	if !app.config.redisCfg.enabled {
+		return app.store.Users.GetByID(ctx, userID)
+	}
+
+	app.logger.Infow("cache hit", "key", "user", "id", userID)
+
+	user, err := app.cacheStorage.Users.Get(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		app.logger.Infow("fetching from db", "id", userID)
+		user, err = app.store.Users.GetByID(ctx, userID)
+		if err != nil {
+			return nil, err
+		}
+
+		if err = app.cacheStorage.Users.Set(ctx, user); err != nil {
+			return nil, err
+		}
+	}
+
+	return user, nil
 }
 
 func (app *application) checkPostOwnership(requiredRole string, next http.HandlerFunc) http.HandlerFunc {

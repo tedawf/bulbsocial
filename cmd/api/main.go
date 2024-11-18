@@ -3,11 +3,13 @@ package main
 import (
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/tedawf/tradebulb/internal/auth"
 	"github.com/tedawf/tradebulb/internal/db"
 	"github.com/tedawf/tradebulb/internal/env"
 	"github.com/tedawf/tradebulb/internal/mail"
 	"github.com/tedawf/tradebulb/internal/store"
+	"github.com/tedawf/tradebulb/internal/store/cache"
 	"go.uber.org/zap"
 )
 
@@ -45,6 +47,12 @@ func main() {
 				iss:    "bulbsocial",
 			},
 		},
+		redisCfg: redisConfig{
+			addr:    env.GetString("REDIS_ADDR", "localhost:6379"),
+			pw:      env.GetString("REDIS_PW", ""),
+			db:      env.GetInt("REDIS_DB", 0),
+			enabled: env.GetBool("REDIS_ENABLED", false),
+		},
 	}
 
 	db, err := db.New(
@@ -62,6 +70,17 @@ func main() {
 
 	store := store.NewStorage(db)
 
+	// cache
+	var rdb *redis.Client
+	if cfg.redisCfg.enabled {
+		rdb = cache.NewRedisClient(cfg.redisCfg.addr, cfg.redisCfg.pw, cfg.redisCfg.db)
+		logger.Info("redis cache connection pool established")
+
+		defer rdb.Close()
+	}
+
+	cacheStorage := cache.NewRedisStorage(rdb)
+
 	mailer := mail.NewSendGrid(cfg.mail.sendGrid.apiKey, cfg.mail.fromEmail)
 
 	jwtAuthenticator := auth.NewJWTAuthenticator(
@@ -76,6 +95,7 @@ func main() {
 		logger:        logger,
 		mailer:        mailer,
 		authenticator: jwtAuthenticator,
+		cacheStorage:  cacheStorage,
 	}
 
 	mux := app.mount()
