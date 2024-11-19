@@ -17,8 +17,8 @@ type MockUserStore struct{}
 func (m *MockUserStore) Create(context.Context, *sql.Tx, *User) error {
 	return nil
 }
-func (m *MockUserStore) GetByID(context.Context, int64) (*User, error) {
-	return &User{}, nil
+func (m *MockUserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
+	return &User{ID: userID}, nil
 }
 func (m *MockUserStore) CreateAndInvite(context.Context, *User, string, time.Duration) error {
 	return nil
