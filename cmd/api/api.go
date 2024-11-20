@@ -13,10 +13,21 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/tedawf/tradebulb/internal/auth"
 	"github.com/tedawf/tradebulb/internal/mail"
+	"github.com/tedawf/tradebulb/internal/ratelimiter"
 	"github.com/tedawf/tradebulb/internal/store"
 	"github.com/tedawf/tradebulb/internal/store/cache"
 	"go.uber.org/zap"
 )
+
+type application struct {
+	config        config
+	store         store.Storage
+	logger        *zap.SugaredLogger
+	mailer        mail.Client
+	authenticator auth.Authenticator
+	cacheStorage  cache.Storage
+	ratelimiter   ratelimiter.Limiter
+}
 
 type config struct {
 	addr        string
@@ -26,6 +37,7 @@ type config struct {
 	frontendURL string
 	auth        authConfig
 	redisCfg    redisConfig
+	ratelimiter ratelimiter.Config
 }
 
 type redisConfig struct {
@@ -68,23 +80,18 @@ type dbConfig struct {
 	maxIdleTime  string
 }
 
-type application struct {
-	config        config
-	store         store.Storage
-	logger        *zap.SugaredLogger
-	mailer        mail.Client
-	authenticator auth.Authenticator
-	cacheStorage  cache.Storage
-}
-
 func (app *application) mount() http.Handler {
 	r := chi.NewRouter()
 
-	// A good base middleware stack
+	// todo: add cors middleware
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+
+	if app.config.ratelimiter.Enabled {
+		r.Use(app.RateLimiterMiddleware)
+	}
 
 	// Set a timeout value on the request context (ctx), that will signal
 	// through ctx.Done() that the request has timed out and further
@@ -92,7 +99,8 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	r.Route("/v1", func(r chi.Router) {
-		r.With(app.BasicAuthMiddleware()).Get("/health", app.healthCheck)
+		// r.With(app.BasicAuthMiddleware()).Get("/health", app.healthCheck)
+		r.Get("/health", app.healthCheck)
 
 		r.Route("/posts", func(r chi.Router) {
 			r.Use(app.TokenAuthMiddleware())

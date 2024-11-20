@@ -8,6 +8,7 @@ import (
 	"github.com/tedawf/tradebulb/internal/db"
 	"github.com/tedawf/tradebulb/internal/env"
 	"github.com/tedawf/tradebulb/internal/mail"
+	"github.com/tedawf/tradebulb/internal/ratelimiter"
 	"github.com/tedawf/tradebulb/internal/store"
 	"github.com/tedawf/tradebulb/internal/store/cache"
 	"go.uber.org/zap"
@@ -49,6 +50,11 @@ func main() {
 			pw:      env.GetString("REDIS_PW", ""),
 			db:      env.GetInt("REDIS_DB", 0),
 			enabled: env.GetBool("REDIS_ENABLED", false),
+		},
+		ratelimiter: ratelimiter.Config{
+			RequestsPerTimeFrame: env.GetInt("RATELIMITER_MAX_REQUESTS", 20),
+			TimeFrame:            time.Second * 5,
+			Enabled:              env.GetBool("RATELIMITER_ENABLED", true),
 		},
 	}
 
@@ -93,6 +99,12 @@ func main() {
 		cfg.auth.token.iss,
 	)
 
+	// ratelimiter
+	ratelimiter := ratelimiter.NewFixedWindowLimiter(
+		cfg.ratelimiter.RequestsPerTimeFrame,
+		cfg.ratelimiter.TimeFrame,
+	)
+
 	app := &application{
 		config:        cfg,
 		store:         store,
@@ -100,6 +112,7 @@ func main() {
 		mailer:        mailer,
 		authenticator: jwtAuthenticator,
 		cacheStorage:  cacheStorage,
+		ratelimiter:   ratelimiter,
 	}
 
 	mux := app.mount()
