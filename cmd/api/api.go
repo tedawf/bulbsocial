@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"expvar"
 	"net/http"
 	"os"
 	"os/signal"
@@ -108,8 +109,8 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	r.Route("/v1", func(r chi.Router) {
-		// r.With(app.BasicAuthMiddleware()).Get("/health", app.healthCheck)
 		r.Get("/health", app.healthCheck)
+		r.With(app.BasicAuthMiddleware()).Get("/debug/vars", expvar.Handler().ServeHTTP)
 
 		r.Route("/posts", func(r chi.Router) {
 			r.Use(app.TokenAuthMiddleware())
