@@ -68,7 +68,7 @@ func main() {
 	}
 
 	defer db.Close()
-	logger.Info("Database connection pool established")
+	logger.Info("database connection pool established")
 
 	store := store.NewStorage(db)
 
