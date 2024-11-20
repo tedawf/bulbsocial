@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/tedawf/tradebulb/internal/auth"
+	"github.com/tedawf/tradebulb/internal/ratelimiter"
 	"github.com/tedawf/tradebulb/internal/store"
 	"github.com/tedawf/tradebulb/internal/store/cache"
 	"go.uber.org/zap"
@@ -21,12 +22,19 @@ func newTestApplication(t *testing.T, cfg config) *application {
 
 	testAuthenticator := &auth.TestAuthenticator{}
 
+	// rate limiter
+	ratelimiter := ratelimiter.NewFixedWindowLimiter(
+		cfg.ratelimiter.RequestsPerTimeFrame,
+		cfg.ratelimiter.TimeFrame,
+	)
+
 	return &application{
 		config:        cfg,
 		logger:        logger,
 		store:         mockStore,
 		cacheStorage:  mockCacheStorage,
 		authenticator: testAuthenticator,
+		ratelimiter:   ratelimiter,
 	}
 }
 
