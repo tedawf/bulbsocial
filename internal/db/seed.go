@@ -8,7 +8,7 @@ import (
 
 	"math/rand"
 
-	"github.com/tedawf/bulb-core/internal/store"
+	"github.com/tedawf/bulbsocial/internal/store"
 )
 
 var usernames = []string{

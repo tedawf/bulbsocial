@@ -5,10 +5,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/tedawf/bulb-core/internal/auth"
-	"github.com/tedawf/bulb-core/internal/ratelimiter"
-	"github.com/tedawf/bulb-core/internal/store"
-	"github.com/tedawf/bulb-core/internal/store/cache"
+	"github.com/tedawf/bulbsocial/internal/auth"
+	"github.com/tedawf/bulbsocial/internal/ratelimiter"
+	"github.com/tedawf/bulbsocial/internal/store"
+	"github.com/tedawf/bulbsocial/internal/store/cache"
 	"go.uber.org/zap"
 )
 

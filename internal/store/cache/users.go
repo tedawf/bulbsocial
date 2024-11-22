@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/tedawf/bulb-core/internal/store"
+	"github.com/tedawf/bulbsocial/internal/store"
 )
 
 type UserStore struct {

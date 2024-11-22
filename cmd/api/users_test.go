@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/mock"
-	"github.com/tedawf/bulb-core/internal/store/cache"
+	"github.com/tedawf/bulbsocial/internal/store/cache"
 )
 
 func TestGetUser(t *testing.T) {

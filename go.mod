@@ -1,4 +1,4 @@
-module github.com/tedawf/bulb-core
+module github.com/tedawf/bulbsocial
 
 go 1.23.2
 
