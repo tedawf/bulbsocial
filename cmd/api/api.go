@@ -13,12 +13,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/tedawf/tradebulb/internal/auth"
-	"github.com/tedawf/tradebulb/internal/env"
-	"github.com/tedawf/tradebulb/internal/mail"
-	"github.com/tedawf/tradebulb/internal/ratelimiter"
-	"github.com/tedawf/tradebulb/internal/store"
-	"github.com/tedawf/tradebulb/internal/store/cache"
+	"github.com/tedawf/bulb-core/internal/auth"
+	"github.com/tedawf/bulb-core/internal/env"
+	"github.com/tedawf/bulb-core/internal/mail"
+	"github.com/tedawf/bulb-core/internal/ratelimiter"
+	"github.com/tedawf/bulb-core/internal/store"
+	"github.com/tedawf/bulb-core/internal/store/cache"
 	"go.uber.org/zap"
 )
 

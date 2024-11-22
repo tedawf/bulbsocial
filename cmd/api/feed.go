@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/tedawf/tradebulb/internal/store"
+	"github.com/tedawf/bulb-core/internal/store"
 )
 
 func (app *application) getUserFeed(w http.ResponseWriter, r *http.Request) {

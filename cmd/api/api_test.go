@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tedawf/tradebulb/internal/ratelimiter"
+	"github.com/tedawf/bulb-core/internal/ratelimiter"
 )
 
 func TestRateLimiterMiddleware(t *testing.T) {

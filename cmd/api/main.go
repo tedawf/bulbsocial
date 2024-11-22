@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/tedawf/tradebulb/internal/auth"
-	"github.com/tedawf/tradebulb/internal/db"
-	"github.com/tedawf/tradebulb/internal/env"
-	"github.com/tedawf/tradebulb/internal/mail"
-	"github.com/tedawf/tradebulb/internal/ratelimiter"
-	"github.com/tedawf/tradebulb/internal/store"
-	"github.com/tedawf/tradebulb/internal/store/cache"
+	"github.com/tedawf/bulb-core/internal/auth"
+	"github.com/tedawf/bulb-core/internal/db"
+	"github.com/tedawf/bulb-core/internal/env"
+	"github.com/tedawf/bulb-core/internal/mail"
+	"github.com/tedawf/bulb-core/internal/ratelimiter"
+	"github.com/tedawf/bulb-core/internal/store"
+	"github.com/tedawf/bulb-core/internal/store/cache"
 	"go.uber.org/zap"
 )
 
@@ -23,7 +23,7 @@ func main() {
 		addr:        env.GetString("ADDR", ":8080"),
 		frontendURL: env.GetString("FRONTEND_URL", "localhost:4000"),
 		db: dbConfig{
-			addr:         env.GetString("DB_ADDR", "postgres://admin:adminpassword@localhost/tradebulb_local?sslmode=disable"),
+			addr:         env.GetString("DB_ADDR", "postgres://admin:admin@localhost/bulb_local?sslmode=disable"),
 			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 30),
 			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONNS", 30),
 			maxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "15m"),

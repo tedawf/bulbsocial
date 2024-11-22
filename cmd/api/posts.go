@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/tedawf/tradebulb/internal/store"
+	"github.com/tedawf/bulb-core/internal/store"
 )
 
 type postKey string

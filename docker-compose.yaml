@@ -1,11 +1,11 @@
 services:
   db:
     image: postgres:16.3
-    container_name: postgres-db
+    container_name: postgres
     environment:
-      POSTGRES_DB: tradebulb_local
+      POSTGRES_DB: bulb_local
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_PASSWORD: admin
     networks:
       - backend
     volumes:

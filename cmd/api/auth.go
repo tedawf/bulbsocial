@@ -9,8 +9,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/tedawf/tradebulb/internal/mail"
-	"github.com/tedawf/tradebulb/internal/store"
+	"github.com/tedawf/bulb-core/internal/mail"
+	"github.com/tedawf/bulb-core/internal/store"
 )
 
 type RegisterUserPayload struct {

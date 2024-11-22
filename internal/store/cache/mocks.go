@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/stretchr/testify/mock"
-	"github.com/tedawf/tradebulb/internal/store"
+	"github.com/tedawf/bulb-core/internal/store"
 )
 
 func NewMockStore() Storage {

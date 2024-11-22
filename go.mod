@@ -1,4 +1,4 @@
-module github.com/tedawf/tradebulb
+module github.com/tedawf/bulb-core
 
 go 1.23.2
 

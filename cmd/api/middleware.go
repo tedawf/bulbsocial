@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/tedawf/tradebulb/internal/store"
+	"github.com/tedawf/bulb-core/internal/store"
 )
 
 func (app *application) BasicAuthMiddleware() func(http.Handler) http.Handler {
