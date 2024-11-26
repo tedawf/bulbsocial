@@ -1,11 +1,11 @@
 services:
   db:
-    image: postgres:16.3
+    image: postgres:17-alpine
     container_name: postgres
     environment:
-      POSTGRES_DB: bulbsocial_dev
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: bulb_dev
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
     networks:
       - backend
     volumes:

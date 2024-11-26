@@ -1,22 +1,16 @@
-include .envrc
-MIGRATIONS_PATH=./cmd/migrate/migrations
+postgres:
+	docker run --name bulbsocial -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -p 5432:5432 -d postgres:17-alpine
 
-.PHONY: new_migration
-new_migration:
-	@migrate create -ext sql -dir $(MIGRATIONS_PATH) -seq $(filter-out $@, $(MAKECMDGOALS))
+createdb:
+	docker exec -it bulbsocial createdb --username=root --owner=root bulb_dev
 
-.PHONY: migrate_up
-migrate_up:
-	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) -verbose up $(filter-out $@, $(MAKECMDGOALS))
+dropdb:
+	docker exec -it bulbsocial dropdb bulb_dev
 
-.PHONY: migrate_down
-migrate_down:
-	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) -verbose down $(filter-out $@, $(MAKECMDGOALS))
+migrateup:
+	migrate -path migrations -database "postgresql://root:secret@localhost:5432/bulb_dev?sslmode=disable" -verbose up
 
-.PHONY: seed
-seed:
-	@go run cmd/seed/main.go
+migratedown:
+	migrate -path migrations -database "postgresql://root:secret@localhost:5432/bulb_dev?sslmode=disable" -verbose down
 
-.PHONY: test
-test:
-	@go test -v ./...
+.PHONY: postgres createdb dropdb migrateup migratedown
