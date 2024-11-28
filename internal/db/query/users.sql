@@ -1,0 +1,78 @@
+-- name: CreateUser :one
+INSERT INTO
+    users (username, email, password, role_id)
+VALUES
+    (
+        $1,
+        $2,
+        $3,
+        (
+            SELECT
+                id
+            FROM
+                roles
+            WHERE
+                name = $4
+        )
+    )
+RETURNING
+    id,
+    created_at;
+
+-- name: GetUserByID :one
+SELECT
+    users.id,
+    username,
+    email,
+    password,
+    created_at,
+    is_verified,
+    role_id,
+    roles.*
+FROM
+    users
+    JOIN roles ON users.role_id = roles.id
+WHERE
+    users.id = $1
+    AND is_verified = TRUE;
+
+-- name: GetUserByEmail :one
+SELECT
+    id,
+    username,
+    email,
+    password,
+    created_at
+FROM
+    users
+WHERE
+    email = $1
+    AND is_verified = TRUE;
+
+-- name: UpdateUser :exec
+UPDATE users
+SET
+    username = $1,
+    email = $2,
+    is_verified = $3
+WHERE
+    id = $4;
+
+-- name: DeleteUser :exec
+DELETE FROM users
+WHERE
+    id = $1;
+
+-- name: GetUserFromInvitation :one
+SELECT
+    u.id,
+    u.username,
+    u.email,
+    u.created_at,
+    u.is_verified
+FROM
+    users u
+    JOIN user_verifications uv ON u.id = uv.user_id
+WHERE
+    uv.token = $1
+    AND uv.expiry > $2;

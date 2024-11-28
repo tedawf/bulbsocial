@@ -1,14 +1,9 @@
 package db
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
-	"log"
-
 	"math/rand"
-
-	"github.com/tedawf/bulbsocial/internal/store"
+	"time"
 )
 
 var usernames = []string{
@@ -194,80 +189,15 @@ var comments = []string{
 	"Your posts are always on point. Thanks for sharing.",
 }
 
-func Seed(store store.Storage, db *sql.DB) {
-	ctx := context.Background()
-
-	users := generateUsers(100)
-	tx, _ := db.BeginTx(ctx, nil)
-
-	for _, user := range users {
-		if err := store.Users.Create(ctx, tx, user); err != nil {
-			_ = tx.Rollback()
-			log.Println("Error creating user:", err)
-			return
-		}
-	}
-
-	tx.Commit()
-
-	posts := generatePosts(200, users)
-	for _, post := range posts {
-		if err := store.Posts.Create(ctx, post); err != nil {
-			log.Println("Error creating post:", err)
-			return
-		}
-	}
-
-	comments := generateComments(500, users, posts)
-	for _, comment := range comments {
-		if err := store.Comments.Create(ctx, comment); err != nil {
-			log.Println("Error creating comment:", err)
-			return
-		}
-	}
-
-	log.Println("Seeding complete")
+func init() {
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
-func generateUsers(num int) []*store.User {
-	users := make([]*store.User, num)
-
-	for i := 0; i < num; i++ {
-		users[i] = &store.User{
-			Username: usernames[i%len(usernames)] + fmt.Sprintf("%d", i),
-			Email:    usernames[i%len(usernames)] + fmt.Sprintf("%d", i) + "@example.com",
-		}
-	}
-
-	return users
+func RandomInt(min, max int64) int64 {
+	return min + rand.Int63n(max-min+1)
 }
 
-func generatePosts(num int, users []*store.User) []*store.Post {
-	posts := make([]*store.Post, num)
-	for i := 0; i < num; i++ {
-		user := users[rand.Intn(len(users))]
-
-		randNum := rand.Intn(len(titles))
-
-		posts[i] = &store.Post{
-			UserID:  user.ID,
-			Title:   titles[randNum],
-			Content: contents[randNum],
-			Tags:    tags[randNum],
-		}
-	}
-
-	return posts
-}
-
-func generateComments(num int, users []*store.User, posts []*store.Post) []*store.Comment {
-	cms := make([]*store.Comment, num)
-	for i := 0; i < num; i++ {
-		cms[i] = &store.Comment{
-			PostID:  posts[rand.Intn(len(posts))].ID,
-			UserID:  users[rand.Intn(len(users))].ID,
-			Content: comments[rand.Intn(len(comments))],
-		}
-	}
-	return cms
+func RandomUser() string {
+	k := len(usernames)
+	return usernames[rand.Intn(k)] + fmt.Sprint(RandomInt(0, 1000))
 }
