@@ -6,17 +6,28 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 type Querier interface {
-	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
+	CreateComment(ctx context.Context, arg CreateCommentParams) (CreateCommentRow, error)
+	CreatePost(ctx context.Context, arg CreatePostParams) (Post, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateUserVerification(ctx context.Context, arg CreateUserVerificationParams) (UserVerification, error)
+	DeletePost(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id int64) error
 	DeleteUserVerification(ctx context.Context, userID int64) error
+	Follow(ctx context.Context, arg FollowParams) error
+	GetCommentsByPostID(ctx context.Context, postID int64) ([]GetCommentsByPostIDRow, error)
+	GetPostByID(ctx context.Context, id int64) (GetPostByIDRow, error)
+	GetRoleByName(ctx context.Context, name string) (GetRoleByNameRow, error)
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error)
+	GetUserFeed(ctx context.Context, arg GetUserFeedParams) ([]GetUserFeedRow, error)
 	GetUserFromInvitation(ctx context.Context, arg GetUserFromInvitationParams) (GetUserFromInvitationRow, error)
-	UpdateUser(ctx context.Context, arg UpdateUserParams) error
+	Unfollow(ctx context.Context, arg UnfollowParams) error
+	UpdatePost(ctx context.Context, arg UpdatePostParams) (sql.NullInt32, error)
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)

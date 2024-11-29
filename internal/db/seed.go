@@ -197,7 +197,27 @@ func RandomInt(min, max int64) int64 {
 	return min + rand.Int63n(max-min+1)
 }
 
-func RandomUser() string {
+func RandomUsername() string {
 	k := len(usernames)
 	return usernames[rand.Intn(k)] + fmt.Sprint(RandomInt(0, 1000))
+}
+
+func RandomTitle() string {
+	k := len(titles)
+	return titles[rand.Intn(k)]
+}
+
+func RandomContent() string {
+	k := len(contents)
+	return contents[rand.Intn(k)]
+}
+
+func RandomTags() []string {
+	k := len(tags)
+	return tags[rand.Intn(k)]
+}
+
+func RandomComment() string {
+	k := len(comments)
+	return comments[rand.Intn(k)]
 }

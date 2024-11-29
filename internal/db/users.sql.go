@@ -29,8 +29,7 @@ VALUES
         )
     )
 RETURNING
-    id,
-    created_at
+    id, email, username, password, created_at, is_verified, role_id
 `
 
 type CreateUserParams struct {
@@ -40,20 +39,23 @@ type CreateUserParams struct {
 	Name     string `json:"name"`
 }
 
-type CreateUserRow struct {
-	ID        int64     `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, createUser,
 		arg.Username,
 		arg.Email,
 		arg.Password,
 		arg.Name,
 	)
-	var i CreateUserRow
-	err := row.Scan(&i.ID, &i.CreatedAt)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.Password,
+		&i.CreatedAt,
+		&i.IsVerified,
+		&i.RoleID,
+	)
 	return i, err
 }
 
@@ -118,7 +120,6 @@ FROM
     JOIN roles ON users.role_id = roles.id
 WHERE
     users.id = $1
-    AND is_verified = TRUE
 `
 
 type GetUserByIDRow struct {
@@ -195,7 +196,7 @@ func (q *Queries) GetUserFromInvitation(ctx context.Context, arg GetUserFromInvi
 	return i, err
 }
 
-const updateUser = `-- name: UpdateUser :exec
+const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET
     username = $1,
@@ -203,6 +204,8 @@ SET
     is_verified = $3
 WHERE
     id = $4
+RETURNING
+    id, email, username, password, created_at, is_verified, role_id
 `
 
 type UpdateUserParams struct {
@@ -212,12 +215,22 @@ type UpdateUserParams struct {
 	ID         int64  `json:"id"`
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
-	_, err := q.db.ExecContext(ctx, updateUser,
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUser,
 		arg.Username,
 		arg.Email,
 		arg.IsVerified,
 		arg.ID,
 	)
-	return err
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.Password,
+		&i.CreatedAt,
+		&i.IsVerified,
+		&i.RoleID,
+	)
+	return i, err
 }

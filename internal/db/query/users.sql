@@ -16,8 +16,7 @@ VALUES
         )
     )
 RETURNING
-    id,
-    created_at;
+    *;
 
 -- name: GetUserByID :one
 SELECT
@@ -33,8 +32,7 @@ FROM
     users
     JOIN roles ON users.role_id = roles.id
 WHERE
-    users.id = $1
-    AND is_verified = TRUE;
+    users.id = $1;
 
 -- name: GetUserByEmail :one
 SELECT
@@ -49,14 +47,16 @@ WHERE
     email = $1
     AND is_verified = TRUE;
 
--- name: UpdateUser :exec
+-- name: UpdateUser :one
 UPDATE users
 SET
     username = $1,
     email = $2,
     is_verified = $3
 WHERE
-    id = $4;
+    id = $4
+RETURNING
+    *;
 
 -- name: DeleteUser :exec
 DELETE FROM users
