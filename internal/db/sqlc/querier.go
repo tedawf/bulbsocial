@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.27.0
 
-package db
+package sqlc
 
 import (
 	"context"
@@ -19,10 +19,10 @@ type Querier interface {
 	DeleteUserVerification(ctx context.Context, userID int64) error
 	Follow(ctx context.Context, arg FollowParams) error
 	GetCommentsByPostID(ctx context.Context, postID int64) ([]GetCommentsByPostIDRow, error)
-	GetPostByID(ctx context.Context, id int64) (GetPostByIDRow, error)
+	GetPostByID(ctx context.Context, id int64) (Post, error)
 	GetRoleByName(ctx context.Context, name string) (GetRoleByNameRow, error)
-	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
-	GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
+	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserFeed(ctx context.Context, arg GetUserFeedParams) ([]GetUserFeedRow, error)
 	GetUserFromInvitation(ctx context.Context, arg GetUserFromInvitationParams) (GetUserFromInvitationRow, error)
 	Unfollow(ctx context.Context, arg UnfollowParams) error

@@ -20,27 +20,15 @@ RETURNING
 
 -- name: GetUserByID :one
 SELECT
-    users.id,
-    username,
-    email,
-    password,
-    created_at,
-    is_verified,
-    role_id,
-    roles.*
+    *
 FROM
     users
-    JOIN roles ON users.role_id = roles.id
 WHERE
     users.id = $1;
 
 -- name: GetUserByEmail :one
 SELECT
-    id,
-    username,
-    email,
-    password,
-    created_at
+    *
 FROM
     users
 WHERE

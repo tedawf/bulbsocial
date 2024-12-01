@@ -3,7 +3,7 @@
 //   sqlc v1.27.0
 // source: comments.sql
 
-package db
+package sqlc
 
 import (
 	"context"

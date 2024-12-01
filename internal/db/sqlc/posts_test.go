@@ -1,4 +1,4 @@
-package db
+package sqlc
 
 import (
 	"context"
@@ -37,7 +37,7 @@ func TestDeletePost(t *testing.T) {
 	err := testQueries.DeletePost(context.Background(), post1.ID)
 	require.NoError(t, err)
 
-	post2, err := testQueries.GetUserByID(context.Background(), post1.ID)
+	post2, err := testQueries.GetPostByID(context.Background(), post1.ID)
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, post2)

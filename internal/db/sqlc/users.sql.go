@@ -3,11 +3,10 @@
 //   sqlc v1.27.0
 // source: users.sql
 
-package db
+package sqlc
 
 import (
 	"context"
-	"database/sql"
 	"time"
 )
 
@@ -72,11 +71,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT
-    id,
-    username,
-    email,
-    password,
-    created_at
+    id, email, username, password, created_at, is_verified, role_id
 FROM
     users
 WHERE
@@ -84,73 +79,41 @@ WHERE
     AND is_verified = TRUE
 `
 
-type GetUserByEmailRow struct {
-	ID        int64     `json:"id"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	Password  []byte    `json:"password"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
-	var i GetUserByEmailRow
+	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.Username,
 		&i.Email,
+		&i.Username,
 		&i.Password,
 		&i.CreatedAt,
+		&i.IsVerified,
+		&i.RoleID,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
 SELECT
-    users.id,
-    username,
-    email,
-    password,
-    created_at,
-    is_verified,
-    role_id,
-    roles.id, roles.name, roles.level, roles.description
+    id, email, username, password, created_at, is_verified, role_id
 FROM
     users
-    JOIN roles ON users.role_id = roles.id
 WHERE
     users.id = $1
 `
 
-type GetUserByIDRow struct {
-	ID          int64          `json:"id"`
-	Username    string         `json:"username"`
-	Email       string         `json:"email"`
-	Password    []byte         `json:"password"`
-	CreatedAt   time.Time      `json:"created_at"`
-	IsVerified  bool           `json:"is_verified"`
-	RoleID      int32          `json:"role_id"`
-	ID_2        int64          `json:"id_2"`
-	Name        string         `json:"name"`
-	Level       int32          `json:"level"`
-	Description sql.NullString `json:"description"`
-}
-
-func (q *Queries) GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error) {
+func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUserByID, id)
-	var i GetUserByIDRow
+	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.Username,
 		&i.Email,
+		&i.Username,
 		&i.Password,
 		&i.CreatedAt,
 		&i.IsVerified,
 		&i.RoleID,
-		&i.ID_2,
-		&i.Name,
-		&i.Level,
-		&i.Description,
 	)
 	return i, err
 }

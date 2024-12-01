@@ -3,7 +3,7 @@
 //   sqlc v1.27.0
 // source: posts.sql
 
-package db
+package sqlc
 
 import (
 	"context"
@@ -63,38 +63,20 @@ func (q *Queries) DeletePost(ctx context.Context, id int64) error {
 
 const getPostByID = `-- name: GetPostByID :one
 SELECT
-    id,
-    user_id,
-    title,
-    content,
-    created_at,
-    updated_at,
-    tags,
-    "version"
+    id, title, user_id, content, created_at, updated_at, tags, version
 FROM
     posts
 WHERE
     id = $1
 `
 
-type GetPostByIDRow struct {
-	ID        int64         `json:"id"`
-	UserID    int64         `json:"user_id"`
-	Title     string        `json:"title"`
-	Content   string        `json:"content"`
-	CreatedAt time.Time     `json:"created_at"`
-	UpdatedAt time.Time     `json:"updated_at"`
-	Tags      []string      `json:"tags"`
-	Version   sql.NullInt32 `json:"version"`
-}
-
-func (q *Queries) GetPostByID(ctx context.Context, id int64) (GetPostByIDRow, error) {
+func (q *Queries) GetPostByID(ctx context.Context, id int64) (Post, error) {
 	row := q.db.QueryRowContext(ctx, getPostByID, id)
-	var i GetPostByIDRow
+	var i Post
 	err := row.Scan(
 		&i.ID,
-		&i.UserID,
 		&i.Title,
+		&i.UserID,
 		&i.Content,
 		&i.CreatedAt,
 		&i.UpdatedAt,
