@@ -16,8 +16,7 @@ INSERT INTO
 VALUES
     ($1, $2, $3)
 RETURNING
-    id,
-    created_at
+    id, post_id, user_id, content, created_at
 `
 
 type CreateCommentParams struct {
@@ -26,15 +25,16 @@ type CreateCommentParams struct {
 	Content string `json:"content"`
 }
 
-type CreateCommentRow struct {
-	ID        int64     `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
-func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (CreateCommentRow, error) {
+func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error) {
 	row := q.db.QueryRowContext(ctx, createComment, arg.PostID, arg.UserID, arg.Content)
-	var i CreateCommentRow
-	err := row.Scan(&i.ID, &i.CreatedAt)
+	var i Comment
+	err := row.Scan(
+		&i.ID,
+		&i.PostID,
+		&i.UserID,
+		&i.Content,
+		&i.CreatedAt,
+	)
 	return i, err
 }
 
@@ -45,8 +45,7 @@ SELECT
     c.user_id,
     c.content,
     c.created_at,
-    users.username,
-    users.id
+    users.username
 FROM
     comments c
     JOIN users ON users.id = c.user_id
@@ -63,7 +62,6 @@ type GetCommentsByPostIDRow struct {
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 	Username  string    `json:"username"`
-	ID_2      int64     `json:"id_2"`
 }
 
 func (q *Queries) GetCommentsByPostID(ctx context.Context, postID int64) ([]GetCommentsByPostIDRow, error) {
@@ -82,7 +80,6 @@ func (q *Queries) GetCommentsByPostID(ctx context.Context, postID int64) ([]GetC
 			&i.Content,
 			&i.CreatedAt,
 			&i.Username,
-			&i.ID_2,
 		); err != nil {
 			return nil, err
 		}

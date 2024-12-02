@@ -4,8 +4,7 @@ INSERT INTO
 VALUES
     ($1, $2, $3)
 RETURNING
-    id,
-    created_at;
+    *;
 
 -- name: GetCommentsByPostID :many
 SELECT
@@ -14,8 +13,7 @@ SELECT
     c.user_id,
     c.content,
     c.created_at,
-    users.username,
-    users.id
+    users.username
 FROM
     comments c
     JOIN users ON users.id = c.user_id

@@ -10,7 +10,7 @@ import (
 )
 
 type Querier interface {
-	CreateComment(ctx context.Context, arg CreateCommentParams) (CreateCommentRow, error)
+	CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error)
 	CreatePost(ctx context.Context, arg CreatePostParams) (Post, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateUserVerification(ctx context.Context, arg CreateUserVerificationParams) (UserVerification, error)
@@ -20,7 +20,7 @@ type Querier interface {
 	Follow(ctx context.Context, arg FollowParams) error
 	GetCommentsByPostID(ctx context.Context, postID int64) ([]GetCommentsByPostIDRow, error)
 	GetPostByID(ctx context.Context, id int64) (Post, error)
-	GetRoleByName(ctx context.Context, name string) (GetRoleByNameRow, error)
+	GetRoleByName(ctx context.Context, name string) (Role, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserFeed(ctx context.Context, arg GetUserFeedParams) ([]GetUserFeedRow, error)

@@ -7,36 +7,25 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
 )
 
 const getRoleByName = `-- name: GetRoleByName :one
 SELECT
-    id,
-    name,
-    description,
-    level
+    id, name, level, description
 FROM
     roles
 WHERE
     name = $1
 `
 
-type GetRoleByNameRow struct {
-	ID          int64          `json:"id"`
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
-	Level       int32          `json:"level"`
-}
-
-func (q *Queries) GetRoleByName(ctx context.Context, name string) (GetRoleByNameRow, error) {
+func (q *Queries) GetRoleByName(ctx context.Context, name string) (Role, error) {
 	row := q.db.QueryRowContext(ctx, getRoleByName, name)
-	var i GetRoleByNameRow
+	var i Role
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.Description,
 		&i.Level,
+		&i.Description,
 	)
 	return i, err
 }
