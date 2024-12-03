@@ -6,14 +6,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/tedawf/bulbsocial/internal/db/seed"
 )
 
 func CreateRandomTestPost(t *testing.T) Post {
 	arg := CreatePostParams{
-		Content: RandomContent(),
-		Title:   RandomTitle(),
+		Content: seed.RandomContent(),
+		Title:   seed.RandomTitle(),
 		UserID:  CreateRandomTestUser(t).ID,
-		Tags:    RandomTags(),
+		Tags:    seed.RandomTags(),
 	}
 
 	post, err := testQueries.CreatePost(context.Background(), arg)
@@ -47,8 +48,8 @@ func TestUpdatePost(t *testing.T) {
 	post1 := CreateRandomTestPost(t)
 
 	arg := UpdatePostParams{
-		Title:   RandomTitle(),
-		Content: RandomContent(),
+		Title:   seed.RandomTitle(),
+		Content: seed.RandomContent(),
 		ID:      post1.ID,
 		Version: post1.Version,
 	}

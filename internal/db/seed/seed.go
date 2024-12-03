@@ -1,4 +1,4 @@
-package sqlc
+package seed
 
 import (
 	"fmt"

@@ -6,20 +6,21 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/tedawf/bulbsocial/internal/db/seed"
 	"github.com/tedawf/bulbsocial/internal/db/sqlc"
 )
 
 func CreateRandomUserVerification(t *testing.T) sqlc.UserVerification {
 	userRepo := NewUserRepository(NewStore(TestDB))
 
-	username := sqlc.RandomUsername()
+	username := seed.RandomUsername()
 	arg := sqlc.CreateUserParams{
 		Username: username,
 		Email:    username + "@email.com",
 		Password: []byte("123123"),
 		Name:     "user",
 	}
-	token := sqlc.RandomUsername() + sqlc.RandomUsername()
+	token := seed.RandomUsername() + seed.RandomUsername()
 	exp := time.Minute * 5
 
 	invite, err := userRepo.CreateAndInviteUser(context.Background(), arg, token, exp)

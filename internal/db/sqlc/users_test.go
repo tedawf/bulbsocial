@@ -8,10 +8,11 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/tedawf/bulbsocial/internal/db/seed"
 )
 
 func CreateRandomTestUser(t *testing.T) User {
-	username := RandomUsername()
+	username := seed.RandomUsername()
 	arg := CreateUserParams{
 		Username: username,
 		Email:    username + "@email.com",
@@ -56,7 +57,7 @@ func TestUpdateUser(t *testing.T) {
 
 	arg := UpdateUserParams{
 		ID:         user1.ID,
-		Username:   RandomUsername(),
+		Username:   seed.RandomUsername(),
 		Email:      user1.Email,
 		IsVerified: user1.IsVerified,
 	}
