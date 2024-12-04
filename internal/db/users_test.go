@@ -1,4 +1,4 @@
-package sqlc
+package db
 
 import (
 	"context"
@@ -8,11 +8,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/tedawf/bulbsocial/internal/db/seed"
 )
 
 func CreateRandomTestUser(t *testing.T) User {
-	username := seed.RandomUsername()
+	username := RandomUsername()
 	arg := CreateUserParams{
 		Username: username,
 		Email:    username + "@email.com",
@@ -57,7 +56,7 @@ func TestUpdateUser(t *testing.T) {
 
 	arg := UpdateUserParams{
 		ID:         user1.ID,
-		Username:   seed.RandomUsername(),
+		Username:   RandomUsername(),
 		Email:      user1.Email,
 		IsVerified: user1.IsVerified,
 	}

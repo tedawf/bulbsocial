@@ -1,4 +1,4 @@
-package sqlc
+package db
 
 import (
 	"context"
@@ -6,15 +6,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/tedawf/bulbsocial/internal/db/seed"
 )
 
 func CreateRandomTestPost(t *testing.T) Post {
 	arg := CreatePostParams{
-		Content: seed.RandomContent(),
-		Title:   seed.RandomTitle(),
+		Content: RandomContent(),
+		Title:   RandomTitle(),
 		UserID:  CreateRandomTestUser(t).ID,
-		Tags:    seed.RandomTags(),
+		Tags:    RandomTags(),
 	}
 
 	post, err := testQueries.CreatePost(context.Background(), arg)
@@ -48,8 +47,8 @@ func TestUpdatePost(t *testing.T) {
 	post1 := CreateRandomTestPost(t)
 
 	arg := UpdatePostParams{
-		Title:   seed.RandomTitle(),
-		Content: seed.RandomContent(),
+		Title:   RandomTitle(),
+		Content: RandomContent(),
 		ID:      post1.ID,
 		Version: post1.Version,
 	}

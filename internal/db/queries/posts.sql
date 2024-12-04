@@ -24,7 +24,7 @@ WHERE
     id = $3
     AND "version" = $4
 RETURNING
-    "version";
+    *;
 
 -- name: DeletePost :exec
 DELETE FROM posts

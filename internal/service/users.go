@@ -1,13 +1,55 @@
 package service
 
 import (
-	"github.com/tedawf/bulbsocial/internal/repository"
+	"context"
+
+	"github.com/tedawf/bulbsocial/internal/db"
 )
 
 type UserService struct {
-	repo repository.UserRepository
+	store *db.Store
 }
 
-func NewUserService(repo repository.UserRepository) *UserService {
-	return &UserService{repo: repo}
+func NewUserService(store *db.Store) *UserService {
+	return &UserService{store: store}
+}
+
+func (u *UserService) GetUserByID(ctx context.Context, userID int64) (db.User, error) {
+	var user db.User
+	return user, u.store.ExecTx(ctx, func(q *db.Queries) error {
+		var err error
+		user, err = q.GetUserByID(ctx, userID)
+		return err
+	})
+}
+
+func (u *UserService) GetUserByEmail(ctx context.Context, email string) (db.User, error) {
+	var user db.User
+	return user, u.store.ExecTx(ctx, func(q *db.Queries) error {
+		var err error
+		user, err = q.GetUserByEmail(ctx, email)
+		return err
+	})
+}
+
+func (u *UserService) CreateUser(ctx context.Context, username, email, password string) (db.User, error) {
+	var user db.User
+	return user, u.store.ExecTx(ctx, func(q *db.Queries) error {
+		var err error
+
+		params := db.CreateUserParams{
+			Username: username,
+			Email:    email,
+			Password: []byte(password), // todo: hash
+		}
+
+		user, err = q.CreateUser(ctx, params)
+		return err
+	})
+}
+
+func (u *UserService) DeleteUser(ctx context.Context, userID int64) error {
+	return u.store.ExecTx(ctx, func(q *db.Queries) error {
+		return q.DeleteUser(ctx, userID)
+	})
 }

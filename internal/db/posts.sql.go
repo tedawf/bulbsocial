@@ -3,7 +3,7 @@
 //   sqlc v1.27.0
 // source: posts.sql
 
-package sqlc
+package db
 
 import (
 	"context"
@@ -193,7 +193,7 @@ WHERE
     id = $3
     AND "version" = $4
 RETURNING
-    "version"
+    id, title, user_id, content, created_at, updated_at, tags, version
 `
 
 type UpdatePostParams struct {
@@ -203,14 +203,23 @@ type UpdatePostParams struct {
 	Version sql.NullInt32 `json:"version"`
 }
 
-func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (sql.NullInt32, error) {
+func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error) {
 	row := q.db.QueryRowContext(ctx, updatePost,
 		arg.Title,
 		arg.Content,
 		arg.ID,
 		arg.Version,
 	)
-	var version sql.NullInt32
-	err := row.Scan(&version)
-	return version, err
+	var i Post
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.UserID,
+		&i.Content,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		pq.Array(&i.Tags),
+		&i.Version,
+	)
+	return i, err
 }
