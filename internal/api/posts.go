@@ -15,7 +15,7 @@ func (s *Server) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 		Tags    []string `json:"tags"`
 	}
 
-	if err := readJSON(w, r, &req); err != nil {
+	if err := s.parse(w, r, &req); err != nil {
 		s.badRequestError(w, r, err)
 		return
 	}
@@ -38,7 +38,7 @@ func (s *Server) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.jsonResponse(w, http.StatusCreated, post); err != nil {
+	if err := s.respond(w, http.StatusCreated, "created post successfully", post); err != nil {
 		s.internalServerError(w, r, err)
 		return
 	}
@@ -57,7 +57,32 @@ func (s *Server) handleGetPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.jsonResponse(w, http.StatusOK, post); err != nil {
+	if err := s.respond(w, http.StatusOK, "fetched post successfully", post); err != nil {
+		s.internalServerError(w, r, err)
+	}
+}
+
+func (s *Server) handleGetFeed(w http.ResponseWriter, r *http.Request) {
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 10
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0
+	}
+
+	posts, err := s.postService.GetFeed(r.Context(), int32(limit), int32(offset))
+	if err != nil {
+		s.notFoundError(w, r, err)
+		return
+	}
+
+	if err := s.respond(w, http.StatusOK, "fetched all posts successfully", posts); err != nil {
 		s.internalServerError(w, r, err)
 	}
 }

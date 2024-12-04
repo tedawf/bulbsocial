@@ -31,3 +31,15 @@ func (u *PostService) GetPostByID(ctx context.Context, postID int64) (db.Post, e
 		return err
 	})
 }
+
+func (u *PostService) GetFeed(ctx context.Context, limit, offset int32) ([]db.Post, error) {
+	var posts []db.Post
+	return posts, u.store.ExecTx(ctx, func(q *db.Queries) error {
+		var err error
+		posts, err = q.GetAllFeed(ctx, db.GetAllFeedParams{
+			Limit:  limit,
+			Offset: offset,
+		})
+		return err
+	})
+}

@@ -8,6 +8,15 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+type UserResponse struct {
+	ID         int64     `json:"id"`
+	Email      string    `json:"email"`
+	Username   string    `json:"username"`
+	CreatedAt  time.Time `json:"created_at"`
+	IsVerified bool      `json:"is_verified"`
+	RoleID     int32     `json:"role_id"`
+}
+
 func (s *Server) handleGetUser(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
 	if err != nil {
@@ -21,15 +30,6 @@ func (s *Server) handleGetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type UserResponse struct {
-		ID         int64     `json:"id"`
-		Email      string    `json:"email"`
-		Username   string    `json:"username"`
-		CreatedAt  time.Time `json:"created_at"`
-		IsVerified bool      `json:"is_verified"`
-		RoleID     int32     `json:"role_id"`
-	}
-
 	res := &UserResponse{
 		ID:         user.ID,
 		Username:   user.Username,
@@ -39,7 +39,7 @@ func (s *Server) handleGetUser(w http.ResponseWriter, r *http.Request) {
 		RoleID:     user.RoleID,
 	}
 
-	if err := s.jsonResponse(w, http.StatusOK, res); err != nil {
+	if err := s.respond(w, http.StatusOK, "fetched user successfully", res); err != nil {
 		s.internalServerError(w, r, err)
 	}
 }

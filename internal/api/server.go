@@ -37,6 +37,8 @@ func (s *Server) setupRoutes() {
 			r.Get("/", s.handleGetPost)
 		})
 	})
+
+	s.router.Get("/feed", s.handleGetFeed)
 }
 
 // setupMiddlewares adds middlewares to the router

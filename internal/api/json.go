@@ -13,18 +13,26 @@ func init() {
 	Validate = validator.New(validator.WithRequiredStructEnabled())
 }
 
-func writeJSON(w http.ResponseWriter, status int, data interface{}) error {
+type APIResponse struct {
+	Status  int         `json:"status"`
+	Message string      `json:"message,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
+}
+
+func (s *Server) respond(w http.ResponseWriter, status int, message string, data interface{}) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
-	if data != nil {
-		return json.NewEncoder(w).Encode(data)
+	response := APIResponse{
+		Status:  status,
+		Message: message,
+		Data:    data,
 	}
 
-	return nil
+	return json.NewEncoder(w).Encode(response)
 }
 
-func readJSON(w http.ResponseWriter, r *http.Request, data interface{}) error {
+func (s *Server) parse(w http.ResponseWriter, r *http.Request, data interface{}) error {
 	maxBytes := 1_048_578 // 1mb
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
 
@@ -32,20 +40,4 @@ func readJSON(w http.ResponseWriter, r *http.Request, data interface{}) error {
 	decoder.DisallowUnknownFields()
 
 	return decoder.Decode(data)
-}
-
-func (s *Server) jsonError(w http.ResponseWriter, status int, message string) error {
-	type envelope struct {
-		Error string `json:"error"`
-	}
-
-	return writeJSON(w, status, &envelope{Error: message})
-}
-
-func (s *Server) jsonResponse(w http.ResponseWriter, status int, data interface{}) error {
-	type envelope struct {
-		Data any `json:"data"`
-	}
-
-	return writeJSON(w, status, &envelope{Data: data})
 }
