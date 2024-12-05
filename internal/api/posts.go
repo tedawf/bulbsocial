@@ -5,14 +5,15 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/lib/pq"
 	"github.com/tedawf/bulbsocial/internal/db"
 )
 
 func (s *Server) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Title   string   `json:"title" validate:"required,max=100"`
-		Content string   `json:"content" validate:"required,max=1000"`
-		Tags    []string `json:"tags"`
+		UserID  int64  `json:"user_id" validate:"gt=0"` // todo: get postID from auth
+		Title   string `json:"title" validate:"required,max=100"`
+		Content string `json:"content" validate:"required,max=1000"`
 	}
 
 	if err := s.parse(w, r, &req); err != nil {
@@ -26,13 +27,20 @@ func (s *Server) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := db.CreatePostParams{
-		UserID:  1, // get postID from auth
+		UserID:  req.UserID,
 		Title:   req.Title,
 		Content: req.Content,
 	}
 
 	post, err := s.postService.CreatePost(r.Context(), params)
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code.Name() {
+			case "foreign_key_violation", "unique_violation":
+				s.forbiddenError(w, r, err)
+				return
+			}
+		}
 		s.internalServerError(w, r, err)
 		return
 	}

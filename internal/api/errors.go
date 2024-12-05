@@ -9,8 +9,8 @@ func (s *Server) internalServerError(w http.ResponseWriter, r *http.Request, err
 
 	s.respond(w, http.StatusInternalServerError, "the server encountered a problem", nil)
 }
-func (s *Server) forbiddenError(w http.ResponseWriter, r *http.Request) {
-	s.logger.Warnw("forbidden", "method", r.Method, "path", r.URL.Path)
+func (s *Server) forbiddenError(w http.ResponseWriter, r *http.Request, err error) {
+	s.logger.Warnw("forbidden", "method", r.Method, "path", r.URL.Path, "error", err.Error())
 
 	s.respond(w, http.StatusForbidden, "forbidden", nil)
 }
