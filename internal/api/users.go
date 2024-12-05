@@ -12,22 +12,20 @@ import (
 )
 
 type UserResponse struct {
-	ID         int64     `json:"id"`
-	Email      string    `json:"email"`
-	Username   string    `json:"username"`
-	CreatedAt  time.Time `json:"created_at"`
-	IsVerified bool      `json:"is_verified"`
-	RoleID     int32     `json:"role_id"`
+	ID                int64        `json:"id"`
+	Email             string       `json:"email"`
+	Username          string       `json:"username"`
+	CreatedAt         time.Time    `json:"created_at"`
+	PasswordChangedAt sql.NullTime `json:"password_changed_at"`
 }
 
 func NewUserResponse(user db.User) UserResponse {
 	return UserResponse{
-		ID:         user.ID,
-		Email:      user.Email,
-		Username:   user.Username,
-		CreatedAt:  user.CreatedAt,
-		IsVerified: user.IsVerified,
-		RoleID:     user.RoleID,
+		ID:                user.ID,
+		Email:             user.Email,
+		Username:          user.Username,
+		CreatedAt:         user.CreatedAt,
+		PasswordChangedAt: user.PasswordChangedAt,
 	}
 }
 

@@ -4,20 +4,49 @@ INSERT INTO
 VALUES
     ($1, $2, $3)
 RETURNING
-    *;
+    id,
+    post_id,
+    user_id,
+    content,
+    created_at;
 
--- name: GetCommentsByPostID :many
+-- name: GetCommentsByPost :many
 SELECT
-    c.id,
-    c.post_id,
-    c.user_id,
-    c.content,
-    c.created_at,
-    users.username
+    id,
+    post_id,
+    user_id,
+    content,
+    created_at
 FROM
-    comments c
-    JOIN users ON users.id = c.user_id
+    comments
 WHERE
-    c.post_id = $1
+    post_id = $1
 ORDER BY
-    c.created_at DESC;
+    created_at DESC
+LIMIT
+    $2
+OFFSET
+    $3;
+
+-- name: DeleteComment :exec
+DELETE FROM comments
+WHERE
+    id = $1;
+
+-- name: SearchComments :many
+SELECT
+    id,
+    post_id,
+    user_id,
+    content,
+    created_at
+FROM
+    comments
+WHERE
+    content ILIKE '%' || $1 || '%'
+ORDER BY
+    created_at DESC
+LIMIT
+    $2
+OFFSET
+    $3;

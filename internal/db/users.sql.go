@@ -7,53 +7,46 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO
-    users (username, email, password, role_id)
+    users (username, email, hashed_password)
 VALUES
-    (
-        $1,
-        $2,
-        $3,
-        (
-            SELECT
-                id
-            FROM
-                roles
-            WHERE
-                name = $4
-        )
-    )
+    ($1, $2, $3)
 RETURNING
-    id, email, username, password, created_at, is_verified, role_id
+    id,
+    username,
+    email,
+    hashed_password,
+    created_at
 `
 
 type CreateUserParams struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password []byte `json:"password"`
-	Name     string `json:"name"`
+	Username       string `json:"username"`
+	Email          string `json:"email"`
+	HashedPassword []byte `json:"hashed_password"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser,
-		arg.Username,
-		arg.Email,
-		arg.Password,
-		arg.Name,
-	)
-	var i User
+type CreateUserRow struct {
+	ID             int64     `json:"id"`
+	Username       string    `json:"username"`
+	Email          string    `json:"email"`
+	HashedPassword []byte    `json:"hashed_password"`
+	CreatedAt      time.Time `json:"created_at"`
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
+	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.Email, arg.HashedPassword)
+	var i CreateUserRow
 	err := row.Scan(
 		&i.ID,
-		&i.Email,
 		&i.Username,
-		&i.Password,
+		&i.Email,
+		&i.HashedPassword,
 		&i.CreatedAt,
-		&i.IsVerified,
-		&i.RoleID,
 	)
 	return i, err
 }
@@ -71,12 +64,16 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT
-    id, email, username, password, created_at, is_verified, role_id
+    id,
+    username,
+    email,
+    hashed_password,
+    created_at,
+    password_changed_at
 FROM
     users
 WHERE
     email = $1
-    AND is_verified = TRUE
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -84,23 +81,27 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.Email,
 		&i.Username,
-		&i.Password,
+		&i.Email,
+		&i.HashedPassword,
 		&i.CreatedAt,
-		&i.IsVerified,
-		&i.RoleID,
+		&i.PasswordChangedAt,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
 SELECT
-    id, email, username, password, created_at, is_verified, role_id
+    id,
+    username,
+    email,
+    hashed_password,
+    created_at,
+    password_changed_at
 FROM
     users
 WHERE
-    users.id = $1
+    id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
@@ -108,92 +109,120 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.Email,
 		&i.Username,
-		&i.Password,
+		&i.Email,
+		&i.HashedPassword,
 		&i.CreatedAt,
-		&i.IsVerified,
-		&i.RoleID,
+		&i.PasswordChangedAt,
 	)
 	return i, err
 }
 
-const getUserFromInvitation = `-- name: GetUserFromInvitation :one
+const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT
-    u.id,
-    u.username,
-    u.email,
-    u.created_at,
-    u.is_verified
+    id,
+    username,
+    email,
+    hashed_password,
+    created_at,
+    password_changed_at
 FROM
-    users u
-    JOIN user_verifications uv ON u.id = uv.user_id
+    users
 WHERE
-    uv.token = $1
-    AND uv.expiry > $2
+    username = $1
 `
 
-type GetUserFromInvitationParams struct {
-	Token  []byte    `json:"token"`
-	Expiry time.Time `json:"expiry"`
-}
-
-type GetUserFromInvitationRow struct {
-	ID         int64     `json:"id"`
-	Username   string    `json:"username"`
-	Email      string    `json:"email"`
-	CreatedAt  time.Time `json:"created_at"`
-	IsVerified bool      `json:"is_verified"`
-}
-
-func (q *Queries) GetUserFromInvitation(ctx context.Context, arg GetUserFromInvitationParams) (GetUserFromInvitationRow, error) {
-	row := q.db.QueryRowContext(ctx, getUserFromInvitation, arg.Token, arg.Expiry)
-	var i GetUserFromInvitationRow
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.Email,
-		&i.CreatedAt,
-		&i.IsVerified,
-	)
-	return i, err
-}
-
-const updateUser = `-- name: UpdateUser :one
-UPDATE users
-SET
-    username = $1,
-    email = $2,
-    is_verified = $3
-WHERE
-    id = $4
-RETURNING
-    id, email, username, password, created_at, is_verified, role_id
-`
-
-type UpdateUserParams struct {
-	Username   string `json:"username"`
-	Email      string `json:"email"`
-	IsVerified bool   `json:"is_verified"`
-	ID         int64  `json:"id"`
-}
-
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUser,
-		arg.Username,
-		arg.Email,
-		arg.IsVerified,
-		arg.ID,
-	)
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.Email,
 		&i.Username,
-		&i.Password,
+		&i.Email,
+		&i.HashedPassword,
 		&i.CreatedAt,
-		&i.IsVerified,
-		&i.RoleID,
+		&i.PasswordChangedAt,
 	)
 	return i, err
+}
+
+const searchUsers = `-- name: SearchUsers :many
+SELECT
+    id,
+    username,
+    email,
+    created_at,
+    password_changed_at
+FROM
+    users
+WHERE
+    username ILIKE '%' || $1 || '%'
+ORDER BY
+    created_at DESC
+LIMIT
+    $2
+OFFSET
+    $3
+`
+
+type SearchUsersParams struct {
+	Column1 sql.NullString `json:"column_1"`
+	Limit   int32          `json:"limit"`
+	Offset  int32          `json:"offset"`
+}
+
+type SearchUsersRow struct {
+	ID                int64        `json:"id"`
+	Username          string       `json:"username"`
+	Email             string       `json:"email"`
+	CreatedAt         time.Time    `json:"created_at"`
+	PasswordChangedAt sql.NullTime `json:"password_changed_at"`
+}
+
+func (q *Queries) SearchUsers(ctx context.Context, arg SearchUsersParams) ([]SearchUsersRow, error) {
+	rows, err := q.db.QueryContext(ctx, searchUsers, arg.Column1, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SearchUsersRow{}
+	for rows.Next() {
+		var i SearchUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Email,
+			&i.CreatedAt,
+			&i.PasswordChangedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateUserPassword = `-- name: UpdateUserPassword :exec
+UPDATE users
+SET
+    hashed_password = $2,
+    password_changed_at = NOW()
+WHERE
+    id = $1
+`
+
+type UpdateUserPasswordParams struct {
+	ID             int64  `json:"id"`
+	HashedPassword []byte `json:"hashed_password"`
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.ID, arg.HashedPassword)
+	return err
 }

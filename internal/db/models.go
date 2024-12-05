@@ -18,41 +18,25 @@ type Comment struct {
 }
 
 type Follower struct {
-	UserID     int64     `json:"user_id"`
 	FollowerID int64     `json:"follower_id"`
+	FolloweeID int64     `json:"followee_id"`
 	CreatedAt  time.Time `json:"created_at"`
 }
 
 type Post struct {
-	ID        int64         `json:"id"`
-	Title     string        `json:"title"`
-	UserID    int64         `json:"user_id"`
-	Content   string        `json:"content"`
-	CreatedAt time.Time     `json:"created_at"`
-	UpdatedAt time.Time     `json:"updated_at"`
-	Tags      []string      `json:"tags"`
-	Version   sql.NullInt32 `json:"version"`
-}
-
-type Role struct {
-	ID          int64          `json:"id"`
-	Name        string         `json:"name"`
-	Level       int32          `json:"level"`
-	Description sql.NullString `json:"description"`
+	ID        int64        `json:"id"`
+	UserID    int64        `json:"user_id"`
+	Title     string       `json:"title"`
+	Content   string       `json:"content"`
+	CreatedAt time.Time    `json:"created_at"`
+	UpdatedAt sql.NullTime `json:"updated_at"`
 }
 
 type User struct {
-	ID         int64     `json:"id"`
-	Email      string    `json:"email"`
-	Username   string    `json:"username"`
-	Password   []byte    `json:"password"`
-	CreatedAt  time.Time `json:"created_at"`
-	IsVerified bool      `json:"is_verified"`
-	RoleID     int32     `json:"role_id"`
-}
-
-type UserVerification struct {
-	Token  []byte    `json:"token"`
-	UserID int64     `json:"user_id"`
-	Expiry time.Time `json:"expiry"`
+	ID                int64        `json:"id"`
+	Username          string       `json:"username"`
+	Email             string       `json:"email"`
+	HashedPassword    []byte       `json:"hashed_password"`
+	CreatedAt         time.Time    `json:"created_at"`
+	PasswordChangedAt sql.NullTime `json:"password_changed_at"`
 }

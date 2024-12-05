@@ -28,12 +28,12 @@ func (u *UserService) GetUserByEmail(ctx context.Context, email string) (user db
 	})
 }
 
-func (u *UserService) CreateUser(ctx context.Context, username, email, password string) (user db.User, err error) {
+func (u *UserService) CreateUser(ctx context.Context, username, email, password string) (user db.CreateUserRow, err error) {
 	return user, u.store.ExecTx(ctx, func(q db.Querier) error {
 		params := db.CreateUserParams{
-			Username: username,
-			Email:    email,
-			Password: []byte(password), // todo: hash
+			Username:       username,
+			Email:          email,
+			HashedPassword: []byte(password), // todo: hash
 		}
 
 		user, err = q.CreateUser(ctx, params)

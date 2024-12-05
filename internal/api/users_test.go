@@ -20,13 +20,11 @@ import (
 
 func TestGetUser(t *testing.T) {
 	user := db.User{
-		ID:         db.RandomInt(1, 1000),
-		Email:      db.RandomUsername() + "@email.com",
-		Username:   db.RandomUsername(),
-		Password:   []byte("123123"),
-		CreatedAt:  time.Now().Round(time.Second),
-		IsVerified: false,
-		RoleID:     0,
+		ID:                db.RandomInt(1, 1000),
+		Email:             db.RandomUsername() + "@email.com",
+		Username:          db.RandomUsername(),
+		CreatedAt:         time.Now().Round(time.Second),
+		PasswordChangedAt: sql.NullTime{},
 	}
 
 	testCases := []struct {

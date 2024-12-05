@@ -1,76 +1,69 @@
 -- name: CreatePost :one
 INSERT INTO
-    posts (content, title, user_id, tags)
+    posts (user_id, title, content)
 VALUES
-    ($1, $2, $3, $4)
+    ($1, $2, $3)
 RETURNING
-    *;
+    id,
+    user_id,
+    title,
+    content,
+    created_at;
 
 -- name: GetPostByID :one
 SELECT
-    *
+    id,
+    user_id,
+    title,
+    content,
+    created_at,
+    updated_at
 FROM
     posts
 WHERE
     id = $1;
 
--- name: UpdatePost :one
+-- name: GetPostsByUser :many
+SELECT
+    id,
+    user_id,
+    title,
+    content,
+    created_at,
+    updated_at
+FROM
+    posts
+WHERE
+    user_id = $1
+ORDER BY
+    created_at DESC
+LIMIT
+    $2
+OFFSET
+    $3;
+
+-- name: UpdatePost :exec
 UPDATE posts
 SET
-    title = $1,
-    content = $2,
-    "version" = "version" + 1
+    title = $2,
+    content = $3,
+    updated_at = NOW()
 WHERE
-    id = $3
-    AND "version" = $4
-RETURNING
-    *;
+    id = $1;
 
 -- name: DeletePost :exec
 DELETE FROM posts
 WHERE
     id = $1;
 
--- name: GetUserFeed :many
+-- name: GetAllPosts :many
 SELECT
-    p.id,
-    p.user_id,
-    p.title,
-    p."content",
-    p.created_at,
-    p."version",
-    p.tags,
-    u.username,
-    COUNT(c.id) AS comments_count
-FROM
-    posts p
-    JOIN comments c ON c.post_id = p.id
-    JOIN users u ON u.id = p.user_id
-    JOIN followers f ON f.user_id = p.user_id
-WHERE
-    f.follower_id = $1
-    OR p.user_id = $1
-    AND (
-        p.title ILIKE '%' || $4 || '%'
-        OR p.content ILIKE '%' || $4 || '%'
-    )
-    AND (
-        p.tags @> $5
-        OR $5 IS NULL
-    )
-GROUP BY
-    p.id,
-    u.username
-ORDER BY
-    p.created_at DESC
-LIMIT
-    $2
-OFFSET
-    $3;
-
--- name: GetAllFeed :many
-SELECT
-    *
+    id,
+    user_id,
+    title,
+    content,
+    created_at,
+    updated_at
 FROM
     posts
 ORDER BY
@@ -79,3 +72,23 @@ LIMIT
     $1
 OFFSET
     $2;
+
+-- name: SearchPosts :many
+SELECT
+    id,
+    user_id,
+    title,
+    content,
+    created_at,
+    updated_at
+FROM
+    posts
+WHERE
+    title ILIKE '%' || $1 || '%'
+    OR content ILIKE '%' || $1 || '%'
+ORDER BY
+    created_at DESC
+LIMIT
+    $2
+OFFSET
+    $3;

@@ -1,66 +1,81 @@
 -- name: CreateUser :one
 INSERT INTO
-    users (username, email, password, role_id)
+    users (username, email, hashed_password)
 VALUES
-    (
-        $1,
-        $2,
-        $3,
-        (
-            SELECT
-                id
-            FROM
-                roles
-            WHERE
-                name = $4
-        )
-    )
+    ($1, $2, $3)
 RETURNING
-    *;
+    id,
+    username,
+    email,
+    hashed_password,
+    created_at;
 
 -- name: GetUserByID :one
 SELECT
-    *
+    id,
+    username,
+    email,
+    hashed_password,
+    created_at,
+    password_changed_at
 FROM
     users
 WHERE
-    users.id = $1;
+    id = $1;
+
+-- name: GetUserByUsername :one
+SELECT
+    id,
+    username,
+    email,
+    hashed_password,
+    created_at,
+    password_changed_at
+FROM
+    users
+WHERE
+    username = $1;
 
 -- name: GetUserByEmail :one
 SELECT
-    *
+    id,
+    username,
+    email,
+    hashed_password,
+    created_at,
+    password_changed_at
 FROM
     users
 WHERE
-    email = $1
-    AND is_verified = TRUE;
+    email = $1;
 
--- name: UpdateUser :one
+-- name: UpdateUserPassword :exec
 UPDATE users
 SET
-    username = $1,
-    email = $2,
-    is_verified = $3
+    hashed_password = $2,
+    password_changed_at = NOW()
 WHERE
-    id = $4
-RETURNING
-    *;
+    id = $1;
 
 -- name: DeleteUser :exec
 DELETE FROM users
 WHERE
     id = $1;
 
--- name: GetUserFromInvitation :one
+-- name: SearchUsers :many
 SELECT
-    u.id,
-    u.username,
-    u.email,
-    u.created_at,
-    u.is_verified
+    id,
+    username,
+    email,
+    created_at,
+    password_changed_at
 FROM
-    users u
-    JOIN user_verifications uv ON u.id = uv.user_id
+    users
 WHERE
-    uv.token = $1
-    AND uv.expiry > $2;
+    username ILIKE '%' || $1 || '%'
+ORDER BY
+    created_at DESC
+LIMIT
+    $2
+OFFSET
+    $3;

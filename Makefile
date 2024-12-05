@@ -12,11 +12,19 @@ dropdb:
 
 .PHONY: migrateup
 migrateup:
-	migrate -path migrations -database "postgresql://root:secret@localhost:5432/bulb_dev?sslmode=disable" -verbose up
+	migrate -path internal/db/migrations -database "postgresql://root:secret@localhost:5432/bulb_dev?sslmode=disable" -verbose up
+	
+.PHONY: migrateup1
+migrateup1:
+	migrate -path internal/db/migrations -database "postgresql://root:secret@localhost:5432/bulb_dev?sslmode=disable" -verbose up 1
 
 .PHONY: migratedown
 migratedown:
-	migrate -path migrations -database "postgresql://root:secret@localhost:5432/bulb_dev?sslmode=disable" -verbose down
+	migrate -path internal/db/migrations -database "postgresql://root:secret@localhost:5432/bulb_dev?sslmode=disable" -verbose down
+
+.PHONY: migratedown1
+migratedown1:
+	migrate -path internal/db/migrations -database "postgresql://root:secret@localhost:5432/bulb_dev?sslmode=disable" -verbose down 1
 
 .PHONY: sqlc
 sqlc:

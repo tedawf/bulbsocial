@@ -9,43 +9,44 @@ import (
 	"context"
 	"database/sql"
 	"time"
-
-	"github.com/lib/pq"
 )
 
 const createPost = `-- name: CreatePost :one
 INSERT INTO
-    posts (content, title, user_id, tags)
+    posts (user_id, title, content)
 VALUES
-    ($1, $2, $3, $4)
+    ($1, $2, $3)
 RETURNING
-    id, title, user_id, content, created_at, updated_at, tags, version
+    id,
+    user_id,
+    title,
+    content,
+    created_at
 `
 
 type CreatePostParams struct {
-	Content string   `json:"content"`
-	Title   string   `json:"title"`
-	UserID  int64    `json:"user_id"`
-	Tags    []string `json:"tags"`
+	UserID  int64  `json:"user_id"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
 }
 
-func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, error) {
-	row := q.db.QueryRowContext(ctx, createPost,
-		arg.Content,
-		arg.Title,
-		arg.UserID,
-		pq.Array(arg.Tags),
-	)
-	var i Post
+type CreatePostRow struct {
+	ID        int64     `json:"id"`
+	UserID    int64     `json:"user_id"`
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (CreatePostRow, error) {
+	row := q.db.QueryRowContext(ctx, createPost, arg.UserID, arg.Title, arg.Content)
+	var i CreatePostRow
 	err := row.Scan(
 		&i.ID,
-		&i.Title,
 		&i.UserID,
+		&i.Title,
 		&i.Content,
 		&i.CreatedAt,
-		&i.UpdatedAt,
-		pq.Array(&i.Tags),
-		&i.Version,
 	)
 	return i, err
 }
@@ -61,9 +62,14 @@ func (q *Queries) DeletePost(ctx context.Context, id int64) error {
 	return err
 }
 
-const getAllFeed = `-- name: GetAllFeed :many
+const getAllPosts = `-- name: GetAllPosts :many
 SELECT
-    id, title, user_id, content, created_at, updated_at, tags, version
+    id,
+    user_id,
+    title,
+    content,
+    created_at,
+    updated_at
 FROM
     posts
 ORDER BY
@@ -74,13 +80,13 @@ OFFSET
     $2
 `
 
-type GetAllFeedParams struct {
+type GetAllPostsParams struct {
 	Limit  int32 `json:"limit"`
 	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) GetAllFeed(ctx context.Context, arg GetAllFeedParams) ([]Post, error) {
-	rows, err := q.db.QueryContext(ctx, getAllFeed, arg.Limit, arg.Offset)
+func (q *Queries) GetAllPosts(ctx context.Context, arg GetAllPostsParams) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getAllPosts, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -90,13 +96,11 @@ func (q *Queries) GetAllFeed(ctx context.Context, arg GetAllFeedParams) ([]Post,
 		var i Post
 		if err := rows.Scan(
 			&i.ID,
-			&i.Title,
 			&i.UserID,
+			&i.Title,
 			&i.Content,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			pq.Array(&i.Tags),
-			&i.Version,
 		); err != nil {
 			return nil, err
 		}
@@ -113,7 +117,12 @@ func (q *Queries) GetAllFeed(ctx context.Context, arg GetAllFeedParams) ([]Post,
 
 const getPostByID = `-- name: GetPostByID :one
 SELECT
-    id, title, user_id, content, created_at, updated_at, tags, version
+    id,
+    user_id,
+    title,
+    content,
+    created_at,
+    updated_at
 FROM
     posts
 WHERE
@@ -125,100 +134,57 @@ func (q *Queries) GetPostByID(ctx context.Context, id int64) (Post, error) {
 	var i Post
 	err := row.Scan(
 		&i.ID,
-		&i.Title,
 		&i.UserID,
+		&i.Title,
 		&i.Content,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		pq.Array(&i.Tags),
-		&i.Version,
 	)
 	return i, err
 }
 
-const getUserFeed = `-- name: GetUserFeed :many
+const getPostsByUser = `-- name: GetPostsByUser :many
 SELECT
-    p.id,
-    p.user_id,
-    p.title,
-    p."content",
-    p.created_at,
-    p."version",
-    p.tags,
-    u.username,
-    COUNT(c.id) AS comments_count
+    id,
+    user_id,
+    title,
+    content,
+    created_at,
+    updated_at
 FROM
-    posts p
-    JOIN comments c ON c.post_id = p.id
-    JOIN users u ON u.id = p.user_id
-    JOIN followers f ON f.user_id = p.user_id
+    posts
 WHERE
-    f.follower_id = $1
-    OR p.user_id = $1
-    AND (
-        p.title ILIKE '%' || $4 || '%'
-        OR p.content ILIKE '%' || $4 || '%'
-    )
-    AND (
-        p.tags @> $5
-        OR $5 IS NULL
-    )
-GROUP BY
-    p.id,
-    u.username
+    user_id = $1
 ORDER BY
-    p.created_at DESC
+    created_at DESC
 LIMIT
     $2
 OFFSET
     $3
 `
 
-type GetUserFeedParams struct {
-	FollowerID int64          `json:"follower_id"`
-	Limit      int32          `json:"limit"`
-	Offset     int32          `json:"offset"`
-	Column4    sql.NullString `json:"column_4"`
-	Tags       []string       `json:"tags"`
+type GetPostsByUserParams struct {
+	UserID int64 `json:"user_id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
-type GetUserFeedRow struct {
-	ID            int64         `json:"id"`
-	UserID        int64         `json:"user_id"`
-	Title         string        `json:"title"`
-	Content       string        `json:"content"`
-	CreatedAt     time.Time     `json:"created_at"`
-	Version       sql.NullInt32 `json:"version"`
-	Tags          []string      `json:"tags"`
-	Username      string        `json:"username"`
-	CommentsCount int64         `json:"comments_count"`
-}
-
-func (q *Queries) GetUserFeed(ctx context.Context, arg GetUserFeedParams) ([]GetUserFeedRow, error) {
-	rows, err := q.db.QueryContext(ctx, getUserFeed,
-		arg.FollowerID,
-		arg.Limit,
-		arg.Offset,
-		arg.Column4,
-		pq.Array(arg.Tags),
-	)
+func (q *Queries) GetPostsByUser(ctx context.Context, arg GetPostsByUserParams) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getPostsByUser, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GetUserFeedRow{}
+	items := []Post{}
 	for rows.Next() {
-		var i GetUserFeedRow
+		var i Post
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
 			&i.Title,
 			&i.Content,
 			&i.CreatedAt,
-			&i.Version,
-			pq.Array(&i.Tags),
-			&i.Username,
-			&i.CommentsCount,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -233,43 +199,80 @@ func (q *Queries) GetUserFeed(ctx context.Context, arg GetUserFeedParams) ([]Get
 	return items, nil
 }
 
-const updatePost = `-- name: UpdatePost :one
+const searchPosts = `-- name: SearchPosts :many
+SELECT
+    id,
+    user_id,
+    title,
+    content,
+    created_at,
+    updated_at
+FROM
+    posts
+WHERE
+    title ILIKE '%' || $1 || '%'
+    OR content ILIKE '%' || $1 || '%'
+ORDER BY
+    created_at DESC
+LIMIT
+    $2
+OFFSET
+    $3
+`
+
+type SearchPostsParams struct {
+	Column1 sql.NullString `json:"column_1"`
+	Limit   int32          `json:"limit"`
+	Offset  int32          `json:"offset"`
+}
+
+func (q *Queries) SearchPosts(ctx context.Context, arg SearchPostsParams) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, searchPosts, arg.Column1, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Post{}
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Title,
+			&i.Content,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updatePost = `-- name: UpdatePost :exec
 UPDATE posts
 SET
-    title = $1,
-    content = $2,
-    "version" = "version" + 1
+    title = $2,
+    content = $3,
+    updated_at = NOW()
 WHERE
-    id = $3
-    AND "version" = $4
-RETURNING
-    id, title, user_id, content, created_at, updated_at, tags, version
+    id = $1
 `
 
 type UpdatePostParams struct {
-	Title   string        `json:"title"`
-	Content string        `json:"content"`
-	ID      int64         `json:"id"`
-	Version sql.NullInt32 `json:"version"`
+	ID      int64  `json:"id"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
 }
 
-func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error) {
-	row := q.db.QueryRowContext(ctx, updatePost,
-		arg.Title,
-		arg.Content,
-		arg.ID,
-		arg.Version,
-	)
-	var i Post
-	err := row.Scan(
-		&i.ID,
-		&i.Title,
-		&i.UserID,
-		&i.Content,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		pq.Array(&i.Tags),
-		&i.Version,
-	)
-	return i, err
+func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) error {
+	_, err := q.db.ExecContext(ctx, updatePost, arg.ID, arg.Title, arg.Content)
+	return err
 }

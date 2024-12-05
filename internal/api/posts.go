@@ -26,10 +26,9 @@ func (s *Server) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := db.CreatePostParams{
-		UserID:  50, // get postID from auth
+		UserID:  1, // get postID from auth
 		Title:   req.Title,
 		Content: req.Content,
-		Tags:    req.Tags,
 	}
 
 	post, err := s.postService.CreatePost(r.Context(), params)
@@ -76,7 +75,7 @@ func (s *Server) handleGetFeed(w http.ResponseWriter, r *http.Request) {
 		offset = 0
 	}
 
-	posts, err := s.postService.GetFeed(r.Context(), int32(limit), int32(offset))
+	posts, err := s.postService.GetAllPosts(r.Context(), int32(limit), int32(offset))
 	if err != nil {
 		s.notFoundError(w, r, err)
 		return

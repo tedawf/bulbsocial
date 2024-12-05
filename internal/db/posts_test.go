@@ -8,12 +8,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func CreateRandomTestPost(t *testing.T) Post {
+func CreateRandomTestPost(t *testing.T) CreatePostRow {
 	arg := CreatePostParams{
-		Content: RandomContent(),
-		Title:   RandomTitle(),
 		UserID:  CreateRandomTestUser(t).ID,
-		Tags:    RandomTags(),
+		Title:   RandomTitle(),
+		Content: RandomContent(),
 	}
 
 	post, err := testQueries.CreatePost(context.Background(), arg)
@@ -23,7 +22,6 @@ func CreateRandomTestPost(t *testing.T) Post {
 	require.Equal(t, arg.Content, post.Content)
 	require.Equal(t, arg.Title, post.Title)
 	require.Equal(t, arg.UserID, post.UserID)
-	require.Equal(t, arg.Tags, post.Tags)
 
 	return post
 }
@@ -47,15 +45,11 @@ func TestUpdatePost(t *testing.T) {
 	post1 := CreateRandomTestPost(t)
 
 	arg := UpdatePostParams{
+		ID:      post1.ID,
 		Title:   RandomTitle(),
 		Content: RandomContent(),
-		ID:      post1.ID,
-		Version: post1.Version,
 	}
 
-	version, err := testQueries.UpdatePost(context.Background(), arg)
+	err := testQueries.UpdatePost(context.Background(), arg)
 	require.NoError(t, err)
-	require.NotEmpty(t, version)
-
-	require.NotEqual(t, arg.Version, version)
 }

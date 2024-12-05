@@ -7,7 +7,7 @@ package db
 
 import (
 	"context"
-	"time"
+	"database/sql"
 )
 
 const createComment = `-- name: CreateComment :one
@@ -16,7 +16,11 @@ INSERT INTO
 VALUES
     ($1, $2, $3)
 RETURNING
-    id, post_id, user_id, content, created_at
+    id,
+    post_id,
+    user_id,
+    content,
+    created_at
 `
 
 type CreateCommentParams struct {
@@ -38,48 +42,111 @@ func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (C
 	return i, err
 }
 
-const getCommentsByPostID = `-- name: GetCommentsByPostID :many
-SELECT
-    c.id,
-    c.post_id,
-    c.user_id,
-    c.content,
-    c.created_at,
-    users.username
-FROM
-    comments c
-    JOIN users ON users.id = c.user_id
+const deleteComment = `-- name: DeleteComment :exec
+DELETE FROM comments
 WHERE
-    c.post_id = $1
-ORDER BY
-    c.created_at DESC
+    id = $1
 `
 
-type GetCommentsByPostIDRow struct {
-	ID        int64     `json:"id"`
-	PostID    int64     `json:"post_id"`
-	UserID    int64     `json:"user_id"`
-	Content   string    `json:"content"`
-	CreatedAt time.Time `json:"created_at"`
-	Username  string    `json:"username"`
+func (q *Queries) DeleteComment(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteComment, id)
+	return err
 }
 
-func (q *Queries) GetCommentsByPostID(ctx context.Context, postID int64) ([]GetCommentsByPostIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, getCommentsByPostID, postID)
+const getCommentsByPost = `-- name: GetCommentsByPost :many
+SELECT
+    id,
+    post_id,
+    user_id,
+    content,
+    created_at
+FROM
+    comments
+WHERE
+    post_id = $1
+ORDER BY
+    created_at DESC
+LIMIT
+    $2
+OFFSET
+    $3
+`
+
+type GetCommentsByPostParams struct {
+	PostID int64 `json:"post_id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) GetCommentsByPost(ctx context.Context, arg GetCommentsByPostParams) ([]Comment, error) {
+	rows, err := q.db.QueryContext(ctx, getCommentsByPost, arg.PostID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GetCommentsByPostIDRow{}
+	items := []Comment{}
 	for rows.Next() {
-		var i GetCommentsByPostIDRow
+		var i Comment
 		if err := rows.Scan(
 			&i.ID,
 			&i.PostID,
 			&i.UserID,
 			&i.Content,
 			&i.CreatedAt,
-			&i.Username,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchComments = `-- name: SearchComments :many
+SELECT
+    id,
+    post_id,
+    user_id,
+    content,
+    created_at
+FROM
+    comments
+WHERE
+    content ILIKE '%' || $1 || '%'
+ORDER BY
+    created_at DESC
+LIMIT
+    $2
+OFFSET
+    $3
+`
+
+type SearchCommentsParams struct {
+	Column1 sql.NullString `json:"column_1"`
+	Limit   int32          `json:"limit"`
+	Offset  int32          `json:"offset"`
+}
+
+func (q *Queries) SearchComments(ctx context.Context, arg SearchCommentsParams) ([]Comment, error) {
+	rows, err := q.db.QueryContext(ctx, searchComments, arg.Column1, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Comment{}
+	for rows.Next() {
+		var i Comment
+		if err := rows.Scan(
+			&i.ID,
+			&i.PostID,
+			&i.UserID,
+			&i.Content,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}

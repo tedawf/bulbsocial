@@ -10,21 +10,27 @@ import (
 
 type Querier interface {
 	CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error)
-	CreatePost(ctx context.Context, arg CreatePostParams) (Post, error)
-	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreatePost(ctx context.Context, arg CreatePostParams) (CreatePostRow, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
+	DeleteComment(ctx context.Context, id int64) error
 	DeletePost(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id int64) error
-	Follow(ctx context.Context, arg FollowParams) error
-	GetAllFeed(ctx context.Context, arg GetAllFeedParams) ([]Post, error)
-	GetCommentsByPostID(ctx context.Context, postID int64) ([]GetCommentsByPostIDRow, error)
+	FollowUser(ctx context.Context, arg FollowUserParams) error
+	GetAllPosts(ctx context.Context, arg GetAllPostsParams) ([]Post, error)
+	GetCommentsByPost(ctx context.Context, arg GetCommentsByPostParams) ([]Comment, error)
+	GetFollowees(ctx context.Context, arg GetFolloweesParams) ([]int64, error)
+	GetFollowers(ctx context.Context, arg GetFollowersParams) ([]int64, error)
 	GetPostByID(ctx context.Context, id int64) (Post, error)
+	GetPostsByUser(ctx context.Context, arg GetPostsByUserParams) ([]Post, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
-	GetUserFeed(ctx context.Context, arg GetUserFeedParams) ([]GetUserFeedRow, error)
-	GetUserFromInvitation(ctx context.Context, arg GetUserFromInvitationParams) (GetUserFromInvitationRow, error)
-	Unfollow(ctx context.Context, arg UnfollowParams) error
-	UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error)
-	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	GetUserByUsername(ctx context.Context, username string) (User, error)
+	SearchComments(ctx context.Context, arg SearchCommentsParams) ([]Comment, error)
+	SearchPosts(ctx context.Context, arg SearchPostsParams) ([]Post, error)
+	SearchUsers(ctx context.Context, arg SearchUsersParams) ([]SearchUsersRow, error)
+	UnfollowUser(ctx context.Context, arg UnfollowUserParams) error
+	UpdatePost(ctx context.Context, arg UpdatePostParams) error
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 }
 
 var _ Querier = (*Queries)(nil)

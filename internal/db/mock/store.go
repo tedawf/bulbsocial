@@ -57,10 +57,10 @@ func (mr *MockStoreMockRecorder) CreateComment(ctx, arg any) *gomock.Call {
 }
 
 // CreatePost mocks base method.
-func (m *MockStore) CreatePost(ctx context.Context, arg db.CreatePostParams) (db.Post, error) {
+func (m *MockStore) CreatePost(ctx context.Context, arg db.CreatePostParams) (db.CreatePostRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreatePost", ctx, arg)
-	ret0, _ := ret[0].(db.Post)
+	ret0, _ := ret[0].(db.CreatePostRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -72,10 +72,10 @@ func (mr *MockStoreMockRecorder) CreatePost(ctx, arg any) *gomock.Call {
 }
 
 // CreateUser mocks base method.
-func (m *MockStore) CreateUser(ctx context.Context, arg db.CreateUserParams) (db.User, error) {
+func (m *MockStore) CreateUser(ctx context.Context, arg db.CreateUserParams) (db.CreateUserRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateUser", ctx, arg)
-	ret0, _ := ret[0].(db.User)
+	ret0, _ := ret[0].(db.CreateUserRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -84,6 +84,20 @@ func (m *MockStore) CreateUser(ctx context.Context, arg db.CreateUserParams) (db
 func (mr *MockStoreMockRecorder) CreateUser(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockStore)(nil).CreateUser), ctx, arg)
+}
+
+// DeleteComment mocks base method.
+func (m *MockStore) DeleteComment(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteComment", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteComment indicates an expected call of DeleteComment.
+func (mr *MockStoreMockRecorder) DeleteComment(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteComment", reflect.TypeOf((*MockStore)(nil).DeleteComment), ctx, id)
 }
 
 // DeletePost mocks base method.
@@ -128,48 +142,78 @@ func (mr *MockStoreMockRecorder) ExecTx(ctx, fn any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecTx", reflect.TypeOf((*MockStore)(nil).ExecTx), ctx, fn)
 }
 
-// Follow mocks base method.
-func (m *MockStore) Follow(ctx context.Context, arg db.FollowParams) error {
+// FollowUser mocks base method.
+func (m *MockStore) FollowUser(ctx context.Context, arg db.FollowUserParams) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Follow", ctx, arg)
+	ret := m.ctrl.Call(m, "FollowUser", ctx, arg)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Follow indicates an expected call of Follow.
-func (mr *MockStoreMockRecorder) Follow(ctx, arg any) *gomock.Call {
+// FollowUser indicates an expected call of FollowUser.
+func (mr *MockStoreMockRecorder) FollowUser(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Follow", reflect.TypeOf((*MockStore)(nil).Follow), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FollowUser", reflect.TypeOf((*MockStore)(nil).FollowUser), ctx, arg)
 }
 
-// GetAllFeed mocks base method.
-func (m *MockStore) GetAllFeed(ctx context.Context, arg db.GetAllFeedParams) ([]db.Post, error) {
+// GetAllPosts mocks base method.
+func (m *MockStore) GetAllPosts(ctx context.Context, arg db.GetAllPostsParams) ([]db.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllFeed", ctx, arg)
+	ret := m.ctrl.Call(m, "GetAllPosts", ctx, arg)
 	ret0, _ := ret[0].([]db.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAllFeed indicates an expected call of GetAllFeed.
-func (mr *MockStoreMockRecorder) GetAllFeed(ctx, arg any) *gomock.Call {
+// GetAllPosts indicates an expected call of GetAllPosts.
+func (mr *MockStoreMockRecorder) GetAllPosts(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllFeed", reflect.TypeOf((*MockStore)(nil).GetAllFeed), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllPosts", reflect.TypeOf((*MockStore)(nil).GetAllPosts), ctx, arg)
 }
 
-// GetCommentsByPostID mocks base method.
-func (m *MockStore) GetCommentsByPostID(ctx context.Context, postID int64) ([]db.GetCommentsByPostIDRow, error) {
+// GetCommentsByPost mocks base method.
+func (m *MockStore) GetCommentsByPost(ctx context.Context, arg db.GetCommentsByPostParams) ([]db.Comment, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCommentsByPostID", ctx, postID)
-	ret0, _ := ret[0].([]db.GetCommentsByPostIDRow)
+	ret := m.ctrl.Call(m, "GetCommentsByPost", ctx, arg)
+	ret0, _ := ret[0].([]db.Comment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetCommentsByPostID indicates an expected call of GetCommentsByPostID.
-func (mr *MockStoreMockRecorder) GetCommentsByPostID(ctx, postID any) *gomock.Call {
+// GetCommentsByPost indicates an expected call of GetCommentsByPost.
+func (mr *MockStoreMockRecorder) GetCommentsByPost(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommentsByPostID", reflect.TypeOf((*MockStore)(nil).GetCommentsByPostID), ctx, postID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommentsByPost", reflect.TypeOf((*MockStore)(nil).GetCommentsByPost), ctx, arg)
+}
+
+// GetFollowees mocks base method.
+func (m *MockStore) GetFollowees(ctx context.Context, arg db.GetFolloweesParams) ([]int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFollowees", ctx, arg)
+	ret0, _ := ret[0].([]int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFollowees indicates an expected call of GetFollowees.
+func (mr *MockStoreMockRecorder) GetFollowees(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowees", reflect.TypeOf((*MockStore)(nil).GetFollowees), ctx, arg)
+}
+
+// GetFollowers mocks base method.
+func (m *MockStore) GetFollowers(ctx context.Context, arg db.GetFollowersParams) ([]int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFollowers", ctx, arg)
+	ret0, _ := ret[0].([]int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFollowers indicates an expected call of GetFollowers.
+func (mr *MockStoreMockRecorder) GetFollowers(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowers", reflect.TypeOf((*MockStore)(nil).GetFollowers), ctx, arg)
 }
 
 // GetPostByID mocks base method.
@@ -185,6 +229,21 @@ func (m *MockStore) GetPostByID(ctx context.Context, id int64) (db.Post, error) 
 func (mr *MockStoreMockRecorder) GetPostByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostByID", reflect.TypeOf((*MockStore)(nil).GetPostByID), ctx, id)
+}
+
+// GetPostsByUser mocks base method.
+func (m *MockStore) GetPostsByUser(ctx context.Context, arg db.GetPostsByUserParams) ([]db.Post, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPostsByUser", ctx, arg)
+	ret0, _ := ret[0].([]db.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPostsByUser indicates an expected call of GetPostsByUser.
+func (mr *MockStoreMockRecorder) GetPostsByUser(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostsByUser", reflect.TypeOf((*MockStore)(nil).GetPostsByUser), ctx, arg)
 }
 
 // GetUserByEmail mocks base method.
@@ -217,57 +276,86 @@ func (mr *MockStoreMockRecorder) GetUserByID(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockStore)(nil).GetUserByID), ctx, id)
 }
 
-// GetUserFeed mocks base method.
-func (m *MockStore) GetUserFeed(ctx context.Context, arg db.GetUserFeedParams) ([]db.GetUserFeedRow, error) {
+// GetUserByUsername mocks base method.
+func (m *MockStore) GetUserByUsername(ctx context.Context, username string) (db.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserFeed", ctx, arg)
-	ret0, _ := ret[0].([]db.GetUserFeedRow)
+	ret := m.ctrl.Call(m, "GetUserByUsername", ctx, username)
+	ret0, _ := ret[0].(db.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserFeed indicates an expected call of GetUserFeed.
-func (mr *MockStoreMockRecorder) GetUserFeed(ctx, arg any) *gomock.Call {
+// GetUserByUsername indicates an expected call of GetUserByUsername.
+func (mr *MockStoreMockRecorder) GetUserByUsername(ctx, username any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserFeed", reflect.TypeOf((*MockStore)(nil).GetUserFeed), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockStore)(nil).GetUserByUsername), ctx, username)
 }
 
-// GetUserFromInvitation mocks base method.
-func (m *MockStore) GetUserFromInvitation(ctx context.Context, arg db.GetUserFromInvitationParams) (db.GetUserFromInvitationRow, error) {
+// SearchComments mocks base method.
+func (m *MockStore) SearchComments(ctx context.Context, arg db.SearchCommentsParams) ([]db.Comment, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserFromInvitation", ctx, arg)
-	ret0, _ := ret[0].(db.GetUserFromInvitationRow)
+	ret := m.ctrl.Call(m, "SearchComments", ctx, arg)
+	ret0, _ := ret[0].([]db.Comment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserFromInvitation indicates an expected call of GetUserFromInvitation.
-func (mr *MockStoreMockRecorder) GetUserFromInvitation(ctx, arg any) *gomock.Call {
+// SearchComments indicates an expected call of SearchComments.
+func (mr *MockStoreMockRecorder) SearchComments(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserFromInvitation", reflect.TypeOf((*MockStore)(nil).GetUserFromInvitation), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchComments", reflect.TypeOf((*MockStore)(nil).SearchComments), ctx, arg)
 }
 
-// Unfollow mocks base method.
-func (m *MockStore) Unfollow(ctx context.Context, arg db.UnfollowParams) error {
+// SearchPosts mocks base method.
+func (m *MockStore) SearchPosts(ctx context.Context, arg db.SearchPostsParams) ([]db.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Unfollow", ctx, arg)
+	ret := m.ctrl.Call(m, "SearchPosts", ctx, arg)
+	ret0, _ := ret[0].([]db.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchPosts indicates an expected call of SearchPosts.
+func (mr *MockStoreMockRecorder) SearchPosts(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchPosts", reflect.TypeOf((*MockStore)(nil).SearchPosts), ctx, arg)
+}
+
+// SearchUsers mocks base method.
+func (m *MockStore) SearchUsers(ctx context.Context, arg db.SearchUsersParams) ([]db.SearchUsersRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchUsers", ctx, arg)
+	ret0, _ := ret[0].([]db.SearchUsersRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchUsers indicates an expected call of SearchUsers.
+func (mr *MockStoreMockRecorder) SearchUsers(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUsers", reflect.TypeOf((*MockStore)(nil).SearchUsers), ctx, arg)
+}
+
+// UnfollowUser mocks base method.
+func (m *MockStore) UnfollowUser(ctx context.Context, arg db.UnfollowUserParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnfollowUser", ctx, arg)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Unfollow indicates an expected call of Unfollow.
-func (mr *MockStoreMockRecorder) Unfollow(ctx, arg any) *gomock.Call {
+// UnfollowUser indicates an expected call of UnfollowUser.
+func (mr *MockStoreMockRecorder) UnfollowUser(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unfollow", reflect.TypeOf((*MockStore)(nil).Unfollow), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnfollowUser", reflect.TypeOf((*MockStore)(nil).UnfollowUser), ctx, arg)
 }
 
 // UpdatePost mocks base method.
-func (m *MockStore) UpdatePost(ctx context.Context, arg db.UpdatePostParams) (db.Post, error) {
+func (m *MockStore) UpdatePost(ctx context.Context, arg db.UpdatePostParams) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePost", ctx, arg)
-	ret0, _ := ret[0].(db.Post)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // UpdatePost indicates an expected call of UpdatePost.
@@ -276,19 +364,18 @@ func (mr *MockStoreMockRecorder) UpdatePost(ctx, arg any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePost", reflect.TypeOf((*MockStore)(nil).UpdatePost), ctx, arg)
 }
 
-// UpdateUser mocks base method.
-func (m *MockStore) UpdateUser(ctx context.Context, arg db.UpdateUserParams) (db.User, error) {
+// UpdateUserPassword mocks base method.
+func (m *MockStore) UpdateUserPassword(ctx context.Context, arg db.UpdateUserPasswordParams) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateUser", ctx, arg)
-	ret0, _ := ret[0].(db.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "UpdateUserPassword", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// UpdateUser indicates an expected call of UpdateUser.
-func (mr *MockStoreMockRecorder) UpdateUser(ctx, arg any) *gomock.Call {
+// UpdateUserPassword indicates an expected call of UpdateUserPassword.
+func (mr *MockStoreMockRecorder) UpdateUserPassword(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockStore)(nil).UpdateUser), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPassword", reflect.TypeOf((*MockStore)(nil).UpdateUserPassword), ctx, arg)
 }
 
 // MockQuerier is a mock of Querier interface.
@@ -331,10 +418,10 @@ func (mr *MockQuerierMockRecorder) CreateComment(ctx, arg any) *gomock.Call {
 }
 
 // CreatePost mocks base method.
-func (m *MockQuerier) CreatePost(ctx context.Context, arg db.CreatePostParams) (db.Post, error) {
+func (m *MockQuerier) CreatePost(ctx context.Context, arg db.CreatePostParams) (db.CreatePostRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreatePost", ctx, arg)
-	ret0, _ := ret[0].(db.Post)
+	ret0, _ := ret[0].(db.CreatePostRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -346,10 +433,10 @@ func (mr *MockQuerierMockRecorder) CreatePost(ctx, arg any) *gomock.Call {
 }
 
 // CreateUser mocks base method.
-func (m *MockQuerier) CreateUser(ctx context.Context, arg db.CreateUserParams) (db.User, error) {
+func (m *MockQuerier) CreateUser(ctx context.Context, arg db.CreateUserParams) (db.CreateUserRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateUser", ctx, arg)
-	ret0, _ := ret[0].(db.User)
+	ret0, _ := ret[0].(db.CreateUserRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -358,6 +445,20 @@ func (m *MockQuerier) CreateUser(ctx context.Context, arg db.CreateUserParams) (
 func (mr *MockQuerierMockRecorder) CreateUser(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockQuerier)(nil).CreateUser), ctx, arg)
+}
+
+// DeleteComment mocks base method.
+func (m *MockQuerier) DeleteComment(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteComment", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteComment indicates an expected call of DeleteComment.
+func (mr *MockQuerierMockRecorder) DeleteComment(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteComment", reflect.TypeOf((*MockQuerier)(nil).DeleteComment), ctx, id)
 }
 
 // DeletePost mocks base method.
@@ -388,48 +489,78 @@ func (mr *MockQuerierMockRecorder) DeleteUser(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockQuerier)(nil).DeleteUser), ctx, id)
 }
 
-// Follow mocks base method.
-func (m *MockQuerier) Follow(ctx context.Context, arg db.FollowParams) error {
+// FollowUser mocks base method.
+func (m *MockQuerier) FollowUser(ctx context.Context, arg db.FollowUserParams) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Follow", ctx, arg)
+	ret := m.ctrl.Call(m, "FollowUser", ctx, arg)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Follow indicates an expected call of Follow.
-func (mr *MockQuerierMockRecorder) Follow(ctx, arg any) *gomock.Call {
+// FollowUser indicates an expected call of FollowUser.
+func (mr *MockQuerierMockRecorder) FollowUser(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Follow", reflect.TypeOf((*MockQuerier)(nil).Follow), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FollowUser", reflect.TypeOf((*MockQuerier)(nil).FollowUser), ctx, arg)
 }
 
-// GetAllFeed mocks base method.
-func (m *MockQuerier) GetAllFeed(ctx context.Context, arg db.GetAllFeedParams) ([]db.Post, error) {
+// GetAllPosts mocks base method.
+func (m *MockQuerier) GetAllPosts(ctx context.Context, arg db.GetAllPostsParams) ([]db.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllFeed", ctx, arg)
+	ret := m.ctrl.Call(m, "GetAllPosts", ctx, arg)
 	ret0, _ := ret[0].([]db.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAllFeed indicates an expected call of GetAllFeed.
-func (mr *MockQuerierMockRecorder) GetAllFeed(ctx, arg any) *gomock.Call {
+// GetAllPosts indicates an expected call of GetAllPosts.
+func (mr *MockQuerierMockRecorder) GetAllPosts(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllFeed", reflect.TypeOf((*MockQuerier)(nil).GetAllFeed), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllPosts", reflect.TypeOf((*MockQuerier)(nil).GetAllPosts), ctx, arg)
 }
 
-// GetCommentsByPostID mocks base method.
-func (m *MockQuerier) GetCommentsByPostID(ctx context.Context, postID int64) ([]db.GetCommentsByPostIDRow, error) {
+// GetCommentsByPost mocks base method.
+func (m *MockQuerier) GetCommentsByPost(ctx context.Context, arg db.GetCommentsByPostParams) ([]db.Comment, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCommentsByPostID", ctx, postID)
-	ret0, _ := ret[0].([]db.GetCommentsByPostIDRow)
+	ret := m.ctrl.Call(m, "GetCommentsByPost", ctx, arg)
+	ret0, _ := ret[0].([]db.Comment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetCommentsByPostID indicates an expected call of GetCommentsByPostID.
-func (mr *MockQuerierMockRecorder) GetCommentsByPostID(ctx, postID any) *gomock.Call {
+// GetCommentsByPost indicates an expected call of GetCommentsByPost.
+func (mr *MockQuerierMockRecorder) GetCommentsByPost(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommentsByPostID", reflect.TypeOf((*MockQuerier)(nil).GetCommentsByPostID), ctx, postID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommentsByPost", reflect.TypeOf((*MockQuerier)(nil).GetCommentsByPost), ctx, arg)
+}
+
+// GetFollowees mocks base method.
+func (m *MockQuerier) GetFollowees(ctx context.Context, arg db.GetFolloweesParams) ([]int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFollowees", ctx, arg)
+	ret0, _ := ret[0].([]int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFollowees indicates an expected call of GetFollowees.
+func (mr *MockQuerierMockRecorder) GetFollowees(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowees", reflect.TypeOf((*MockQuerier)(nil).GetFollowees), ctx, arg)
+}
+
+// GetFollowers mocks base method.
+func (m *MockQuerier) GetFollowers(ctx context.Context, arg db.GetFollowersParams) ([]int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFollowers", ctx, arg)
+	ret0, _ := ret[0].([]int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFollowers indicates an expected call of GetFollowers.
+func (mr *MockQuerierMockRecorder) GetFollowers(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowers", reflect.TypeOf((*MockQuerier)(nil).GetFollowers), ctx, arg)
 }
 
 // GetPostByID mocks base method.
@@ -445,6 +576,21 @@ func (m *MockQuerier) GetPostByID(ctx context.Context, id int64) (db.Post, error
 func (mr *MockQuerierMockRecorder) GetPostByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostByID", reflect.TypeOf((*MockQuerier)(nil).GetPostByID), ctx, id)
+}
+
+// GetPostsByUser mocks base method.
+func (m *MockQuerier) GetPostsByUser(ctx context.Context, arg db.GetPostsByUserParams) ([]db.Post, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPostsByUser", ctx, arg)
+	ret0, _ := ret[0].([]db.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPostsByUser indicates an expected call of GetPostsByUser.
+func (mr *MockQuerierMockRecorder) GetPostsByUser(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostsByUser", reflect.TypeOf((*MockQuerier)(nil).GetPostsByUser), ctx, arg)
 }
 
 // GetUserByEmail mocks base method.
@@ -477,57 +623,86 @@ func (mr *MockQuerierMockRecorder) GetUserByID(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockQuerier)(nil).GetUserByID), ctx, id)
 }
 
-// GetUserFeed mocks base method.
-func (m *MockQuerier) GetUserFeed(ctx context.Context, arg db.GetUserFeedParams) ([]db.GetUserFeedRow, error) {
+// GetUserByUsername mocks base method.
+func (m *MockQuerier) GetUserByUsername(ctx context.Context, username string) (db.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserFeed", ctx, arg)
-	ret0, _ := ret[0].([]db.GetUserFeedRow)
+	ret := m.ctrl.Call(m, "GetUserByUsername", ctx, username)
+	ret0, _ := ret[0].(db.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserFeed indicates an expected call of GetUserFeed.
-func (mr *MockQuerierMockRecorder) GetUserFeed(ctx, arg any) *gomock.Call {
+// GetUserByUsername indicates an expected call of GetUserByUsername.
+func (mr *MockQuerierMockRecorder) GetUserByUsername(ctx, username any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserFeed", reflect.TypeOf((*MockQuerier)(nil).GetUserFeed), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockQuerier)(nil).GetUserByUsername), ctx, username)
 }
 
-// GetUserFromInvitation mocks base method.
-func (m *MockQuerier) GetUserFromInvitation(ctx context.Context, arg db.GetUserFromInvitationParams) (db.GetUserFromInvitationRow, error) {
+// SearchComments mocks base method.
+func (m *MockQuerier) SearchComments(ctx context.Context, arg db.SearchCommentsParams) ([]db.Comment, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserFromInvitation", ctx, arg)
-	ret0, _ := ret[0].(db.GetUserFromInvitationRow)
+	ret := m.ctrl.Call(m, "SearchComments", ctx, arg)
+	ret0, _ := ret[0].([]db.Comment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserFromInvitation indicates an expected call of GetUserFromInvitation.
-func (mr *MockQuerierMockRecorder) GetUserFromInvitation(ctx, arg any) *gomock.Call {
+// SearchComments indicates an expected call of SearchComments.
+func (mr *MockQuerierMockRecorder) SearchComments(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserFromInvitation", reflect.TypeOf((*MockQuerier)(nil).GetUserFromInvitation), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchComments", reflect.TypeOf((*MockQuerier)(nil).SearchComments), ctx, arg)
 }
 
-// Unfollow mocks base method.
-func (m *MockQuerier) Unfollow(ctx context.Context, arg db.UnfollowParams) error {
+// SearchPosts mocks base method.
+func (m *MockQuerier) SearchPosts(ctx context.Context, arg db.SearchPostsParams) ([]db.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Unfollow", ctx, arg)
+	ret := m.ctrl.Call(m, "SearchPosts", ctx, arg)
+	ret0, _ := ret[0].([]db.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchPosts indicates an expected call of SearchPosts.
+func (mr *MockQuerierMockRecorder) SearchPosts(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchPosts", reflect.TypeOf((*MockQuerier)(nil).SearchPosts), ctx, arg)
+}
+
+// SearchUsers mocks base method.
+func (m *MockQuerier) SearchUsers(ctx context.Context, arg db.SearchUsersParams) ([]db.SearchUsersRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchUsers", ctx, arg)
+	ret0, _ := ret[0].([]db.SearchUsersRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchUsers indicates an expected call of SearchUsers.
+func (mr *MockQuerierMockRecorder) SearchUsers(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUsers", reflect.TypeOf((*MockQuerier)(nil).SearchUsers), ctx, arg)
+}
+
+// UnfollowUser mocks base method.
+func (m *MockQuerier) UnfollowUser(ctx context.Context, arg db.UnfollowUserParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnfollowUser", ctx, arg)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Unfollow indicates an expected call of Unfollow.
-func (mr *MockQuerierMockRecorder) Unfollow(ctx, arg any) *gomock.Call {
+// UnfollowUser indicates an expected call of UnfollowUser.
+func (mr *MockQuerierMockRecorder) UnfollowUser(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unfollow", reflect.TypeOf((*MockQuerier)(nil).Unfollow), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnfollowUser", reflect.TypeOf((*MockQuerier)(nil).UnfollowUser), ctx, arg)
 }
 
 // UpdatePost mocks base method.
-func (m *MockQuerier) UpdatePost(ctx context.Context, arg db.UpdatePostParams) (db.Post, error) {
+func (m *MockQuerier) UpdatePost(ctx context.Context, arg db.UpdatePostParams) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePost", ctx, arg)
-	ret0, _ := ret[0].(db.Post)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // UpdatePost indicates an expected call of UpdatePost.
@@ -536,17 +711,16 @@ func (mr *MockQuerierMockRecorder) UpdatePost(ctx, arg any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePost", reflect.TypeOf((*MockQuerier)(nil).UpdatePost), ctx, arg)
 }
 
-// UpdateUser mocks base method.
-func (m *MockQuerier) UpdateUser(ctx context.Context, arg db.UpdateUserParams) (db.User, error) {
+// UpdateUserPassword mocks base method.
+func (m *MockQuerier) UpdateUserPassword(ctx context.Context, arg db.UpdateUserPasswordParams) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateUser", ctx, arg)
-	ret0, _ := ret[0].(db.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "UpdateUserPassword", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// UpdateUser indicates an expected call of UpdateUser.
-func (mr *MockQuerierMockRecorder) UpdateUser(ctx, arg any) *gomock.Call {
+// UpdateUserPassword indicates an expected call of UpdateUserPassword.
+func (mr *MockQuerierMockRecorder) UpdateUserPassword(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockQuerier)(nil).UpdateUser), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPassword", reflect.TypeOf((*MockQuerier)(nil).UpdateUserPassword), ctx, arg)
 }
