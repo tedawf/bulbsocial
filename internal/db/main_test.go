@@ -7,22 +7,24 @@ import (
 	"testing"
 
 	_ "github.com/lib/pq"
-)
-
-const (
-	dbDriver = "postgres"
-	dbSource = "postgresql://root:secret@localhost:5432/bulb_dev?sslmode=disable"
+	"github.com/tedawf/bulbsocial/internal/config"
 )
 
 var testQueries *Queries
+var testDB *sql.DB
 
 func TestMain(m *testing.M) {
-	conn, err := sql.Open(dbDriver, dbSource)
+	cfg, err := config.LoadConfig("../..")
+	if err != nil {
+		log.Fatal("failed to load config: ", err)
+	}
+
+	testDB, err := sql.Open(cfg.DBDriver, cfg.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to db: ", err)
 	}
 
-	testQueries = New(conn)
+	testQueries = New(testDB)
 
 	os.Exit(m.Run())
 }

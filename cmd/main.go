@@ -4,37 +4,39 @@ import (
 	"database/sql"
 	"log"
 
+	_ "github.com/lib/pq"
 	"github.com/tedawf/bulbsocial/internal/api"
+	"github.com/tedawf/bulbsocial/internal/config"
 	"github.com/tedawf/bulbsocial/internal/db"
 	"go.uber.org/zap"
 )
 
-const (
-	dbDriver      = "postgres"
-	dbSource      = "postgresql://root:secret@localhost:5432/bulb_dev?sslmode=disable"
-	serverAddress = "0.0.0.0:8080"
-)
-
 func main() {
+	// config
+	cfg, err := config.LoadConfig(".")
+	if err != nil {
+		log.Fatal("failed to load config: ", err)
+	}
+
 	// logger
 	logger, err := zap.NewDevelopment()
 	if err != nil {
-		log.Fatalf("failed to initialize logger: %v", err)
+		log.Fatal("failed to initialize logger: ", err)
 	}
 	defer logger.Sync() // flushes buffer, if any
 	sugar := logger.Sugar()
 
 	// db
-	conn, err := sql.Open(dbDriver, dbSource)
+	conn, err := sql.Open(cfg.DBDriver, cfg.DBSource)
 	if err != nil {
 		sugar.Fatal("cannot connect to db: ", err)
 	}
 	defer conn.Close()
-	store := db.NewStore(conn)
+	store := db.NewSQLStore(conn)
 
 	// server
 	server := api.NewServer(store, sugar)
-	if err = server.Start(serverAddress); err != nil {
+	if err = server.Start(cfg.ServerAddress); err != nil {
 		sugar.Fatal("cannot start server: ", err)
 	}
 }

@@ -51,7 +51,7 @@ func (s *Server) setupMiddlewares() {
 }
 
 // NewServer creates a new HTTP server with routes and dependencies
-func NewServer(store *db.Store, logger *zap.SugaredLogger) *Server {
+func NewServer(store db.Store, logger *zap.SugaredLogger) *Server {
 	server := &Server{
 		router: chi.NewRouter(),
 		logger: logger,

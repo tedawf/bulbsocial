@@ -13,17 +13,17 @@ func init() {
 	Validate = validator.New(validator.WithRequiredStructEnabled())
 }
 
-type APIResponse struct {
-	Status  int         `json:"status"`
-	Message string      `json:"message,omitempty"`
-	Data    interface{} `json:"data,omitempty"`
+type APIResponse[T any] struct {
+	Status  int    `json:"status"`
+	Message string `json:"message,omitempty"`
+	Data    T      `json:"data,omitempty"`
 }
 
 func (s *Server) respond(w http.ResponseWriter, status int, message string, data interface{}) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
-	response := APIResponse{
+	response := APIResponse[interface{}]{
 		Status:  status,
 		Message: message,
 		Data:    data,

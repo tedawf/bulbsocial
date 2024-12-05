@@ -1,11 +1,14 @@
 package api
 
 import (
+	"database/sql"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/tedawf/bulbsocial/internal/db"
 )
 
 type UserResponse struct {
@@ -17,27 +20,36 @@ type UserResponse struct {
 	RoleID     int32     `json:"role_id"`
 }
 
+func NewUserResponse(user db.User) UserResponse {
+	return UserResponse{
+		ID:         user.ID,
+		Email:      user.Email,
+		Username:   user.Username,
+		CreatedAt:  user.CreatedAt,
+		IsVerified: user.IsVerified,
+		RoleID:     user.RoleID,
+	}
+}
+
 func (s *Server) handleGetUser(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
-	if err != nil {
-		s.badRequestError(w, r, err)
+	if err != nil || userID < 1 {
+		s.badRequestError(w, r, fmt.Errorf("invalid user ID: must be a positive integer"))
 		return
 	}
 
 	user, err := s.userService.GetUserByID(r.Context(), userID)
 	if err != nil {
-		s.notFoundError(w, r, err)
+		switch err {
+		case sql.ErrNoRows:
+			s.notFoundError(w, r, err)
+		default:
+			s.internalServerError(w, r, err)
+		}
 		return
 	}
 
-	res := &UserResponse{
-		ID:         user.ID,
-		Username:   user.Username,
-		Email:      user.Email,
-		CreatedAt:  user.CreatedAt,
-		IsVerified: user.IsVerified,
-		RoleID:     user.RoleID,
-	}
+	res := NewUserResponse(user)
 
 	if err := s.respond(w, http.StatusOK, "fetched user successfully", res); err != nil {
 		s.internalServerError(w, r, err)

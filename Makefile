@@ -29,3 +29,7 @@ test:
 .PHONY: server
 server:
 	go run cmd/main.go
+
+.PHONY: mock
+mock:
+	mockgen -package=mockdb -destination internal/db/mock/store.go github.com/tedawf/bulbsocial/internal/db Store,Querier

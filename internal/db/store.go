@@ -6,28 +6,33 @@ import (
 	"errors"
 )
 
-// Store provides all functions to execute db queries and transactions
-type Store struct {
-	queries *Queries
-	db      *sql.DB
+type Store interface {
+	Querier
+	ExecTx(ctx context.Context, fn func(Querier) error) error
 }
 
-// Creates a new Store
-func NewStore(db *sql.DB) *Store {
-	return &Store{
-		queries: New(db),
+// SQLStore provides all functions to execute sql queries and transactions
+type SQLStore struct {
+	*Queries
+	db *sql.DB
+}
+
+// Creates a new SQLStore
+func NewSQLStore(db *sql.DB) Store {
+	return &SQLStore{
+		Queries: New(db),
 		db:      db,
 	}
 }
 
 // ExecTx executes a function within a database transaction
-func (s *Store) ExecTx(ctx context.Context, fn func(*Queries) error) error {
+func (s *SQLStore) ExecTx(ctx context.Context, fn func(Querier) error) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 
-	qtx := s.queries.WithTx(tx)
+	qtx := s.Queries.WithTx(tx)
 
 	if err = fn(qtx); err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
