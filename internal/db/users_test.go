@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -38,7 +37,6 @@ func TestCreateUser(t *testing.T) {
 
 func TestGetUserByID(t *testing.T) {
 	user1 := CreateRandomTestUser(t)
-	fmt.Print(user1.ID)
 	user2, err := testQueries.GetUserByID(context.Background(), user1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
