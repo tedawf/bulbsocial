@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/lib/pq"
 	"github.com/tedawf/bulbsocial/internal/db"
 )
 
@@ -51,5 +52,53 @@ func (s *Server) handleGetUser(w http.ResponseWriter, r *http.Request) {
 
 	if err := s.respond(w, http.StatusOK, "fetched user successfully", res); err != nil {
 		s.internalServerError(w, r, err)
+	}
+}
+
+func (s *Server) handleCreateUser(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Username string `json:"username" validate:"required,alphanum"` // todo: get postID from auth
+		Password string `json:"password" validate:"required,min=6"`
+		Email    string `json:"email" validate:"required,email"`
+	}
+
+	if err := s.parse(w, r, &req); err != nil {
+		s.badRequestError(w, r, err)
+		return
+	}
+
+	if err := Validate.Struct(req); err != nil {
+		s.badRequestError(w, r, err)
+		return
+	}
+
+	user, err := s.userService.CreateUser(r.Context(), req.Username, req.Email, req.Password)
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code.Name() {
+			case "unique_violation":
+				s.forbiddenError(w, r, err)
+				return
+			}
+		}
+		s.internalServerError(w, r, err)
+		return
+	}
+
+	res := struct {
+		UserID    int64     `json:"user_id"`
+		Username  string    `json:"username"`
+		Email     string    `json:"email"`
+		CreatedAt time.Time `json:"password"`
+	}{
+		UserID:    user.ID,
+		Username:  user.Username,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+	}
+
+	if err := s.respond(w, http.StatusCreated, "created user successfully", res); err != nil {
+		s.internalServerError(w, r, err)
+		return
 	}
 }

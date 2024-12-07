@@ -21,7 +21,8 @@ RETURNING
     username,
     email,
     hashed_password,
-    created_at
+    created_at,
+    password_changed_at
 `
 
 type CreateUserParams struct {
@@ -30,23 +31,16 @@ type CreateUserParams struct {
 	HashedPassword []byte `json:"hashed_password"`
 }
 
-type CreateUserRow struct {
-	ID             int64     `json:"id"`
-	Username       string    `json:"username"`
-	Email          string    `json:"email"`
-	HashedPassword []byte    `json:"hashed_password"`
-	CreatedAt      time.Time `json:"created_at"`
-}
-
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.Email, arg.HashedPassword)
-	var i CreateUserRow
+	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
 		&i.Email,
 		&i.HashedPassword,
 		&i.CreatedAt,
+		&i.PasswordChangedAt,
 	)
 	return i, err
 }

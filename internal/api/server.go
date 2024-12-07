@@ -25,6 +25,8 @@ func (s *Server) setupRoutes() {
 	s.router.Get("/health", s.handleHealthCheck)
 
 	s.router.Route("/users", func(r chi.Router) {
+		r.Post("/", s.handleCreateUser)
+
 		r.Route("/{userID}", func(r chi.Router) {
 			r.Get("/", s.handleGetUser)
 		})

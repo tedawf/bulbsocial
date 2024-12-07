@@ -14,26 +14,17 @@ func NewPostService(store db.Store) *PostService {
 	return &PostService{store: store}
 }
 
-func (p *PostService) CreatePost(ctx context.Context, params db.CreatePostParams) (post db.CreatePostRow, err error) {
-	return post, p.store.ExecTx(ctx, func(q db.Querier) error {
-		post, err = q.CreatePost(ctx, params)
-		return err
-	})
+func (p *PostService) CreatePost(ctx context.Context, params db.CreatePostParams) (db.CreatePostRow, error) {
+	return p.store.CreatePost(ctx, params)
 }
 
-func (u *PostService) GetPostByID(ctx context.Context, postID int64) (post db.Post, err error) {
-	return post, u.store.ExecTx(ctx, func(q db.Querier) error {
-		post, err = q.GetPostByID(ctx, postID)
-		return err
-	})
+func (p *PostService) GetPostByID(ctx context.Context, postID int64) (db.Post, error) {
+	return p.store.GetPostByID(ctx, postID)
 }
 
-func (u *PostService) GetAllPosts(ctx context.Context, limit, offset int32) (posts []db.Post, err error) {
-	return posts, u.store.ExecTx(ctx, func(q db.Querier) error {
-		posts, err = q.GetAllPosts(ctx, db.GetAllPostsParams{
-			Limit:  limit,
-			Offset: offset,
-		})
-		return err
+func (p *PostService) GetAllPosts(ctx context.Context, limit, offset int32) (posts []db.Post, err error) {
+	return p.store.GetAllPosts(ctx, db.GetAllPostsParams{
+		Limit:  limit,
+		Offset: offset,
 	})
 }

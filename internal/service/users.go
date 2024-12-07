@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/tedawf/bulbsocial/internal/auth"
 	"github.com/tedawf/bulbsocial/internal/db"
 )
 
@@ -14,28 +15,25 @@ func NewUserService(store db.Store) *UserService {
 	return &UserService{store: store}
 }
 
-func (u *UserService) GetUserByID(ctx context.Context, userID int64) (user db.User, err error) {
-	return user, u.store.ExecTx(ctx, func(q db.Querier) error {
-		user, err = q.GetUserByID(ctx, userID)
-		return err
-	})
+func (u *UserService) GetUserByID(ctx context.Context, userID int64) (db.User, error) {
+	return u.store.GetUserByID(ctx, userID)
 }
 
-func (u *UserService) CreateUser(ctx context.Context, username, email, password string) (user db.CreateUserRow, err error) {
-	return user, u.store.ExecTx(ctx, func(q db.Querier) error {
-		params := db.CreateUserParams{
-			Username:       username,
-			Email:          email,
-			HashedPassword: []byte(password), // todo: hash
-		}
+func (u *UserService) CreateUser(ctx context.Context, username, email, password string) (db.User, error) {
+	hashedPassword, err := auth.HashPassword(password)
+	if err != nil {
+		return db.User{}, err
+	}
 
-		user, err = q.CreateUser(ctx, params)
-		return err
-	})
+	params := db.CreateUserParams{
+		Username:       username,
+		Email:          email,
+		HashedPassword: []byte(hashedPassword),
+	}
+
+	return u.store.CreateUser(ctx, params)
 }
 
 func (u *UserService) DeleteUser(ctx context.Context, userID int64) error {
-	return u.store.ExecTx(ctx, func(q db.Querier) error {
-		return q.DeleteUser(ctx, userID)
-	})
+	return u.store.DeleteUser(ctx, userID)
 }

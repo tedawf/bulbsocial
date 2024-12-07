@@ -7,14 +7,18 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/tedawf/bulbsocial/internal/auth"
 )
 
-func CreateRandomTestUser(t *testing.T) CreateUserRow {
+func CreateRandomTestUser(t *testing.T) User {
 	username := RandomUsername()
+	hashedPassword, err := auth.HashPassword(RandomString(10))
+	require.NoError(t, err)
+
 	arg := CreateUserParams{
 		Username:       username,
 		Email:          username + "@email.com",
-		HashedPassword: []byte("123123"),
+		HashedPassword: []byte(hashedPassword),
 	}
 
 	user, err := testQueries.CreateUser(context.Background(), arg)
@@ -50,13 +54,15 @@ func TestGetUserByID(t *testing.T) {
 
 func TestUpdateUserPassword(t *testing.T) {
 	user1 := CreateRandomTestUser(t)
+	hashedPassword, err := auth.HashPassword(RandomString(10))
+	require.NoError(t, err)
 
 	arg := UpdateUserPasswordParams{
 		ID:             user1.ID,
-		HashedPassword: []byte("4546456"),
+		HashedPassword: []byte(hashedPassword),
 	}
 
-	err := testQueries.UpdateUserPassword(context.Background(), arg)
+	err = testQueries.UpdateUserPassword(context.Background(), arg)
 	require.NoError(t, err)
 }
 

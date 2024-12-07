@@ -8,7 +8,8 @@ RETURNING
     username,
     email,
     hashed_password,
-    created_at;
+    created_at,
+    password_changed_at;
 
 -- name: GetUserByID :one
 SELECT
