@@ -8,7 +8,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"time"
 )
 
 const createPost = `-- name: CreatePost :one
@@ -21,7 +20,8 @@ RETURNING
     user_id,
     title,
     content,
-    created_at
+    created_at,
+    updated_at
 `
 
 type CreatePostParams struct {
@@ -30,23 +30,16 @@ type CreatePostParams struct {
 	Content string `json:"content"`
 }
 
-type CreatePostRow struct {
-	ID        int64     `json:"id"`
-	UserID    int64     `json:"user_id"`
-	Title     string    `json:"title"`
-	Content   string    `json:"content"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
-func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (CreatePostRow, error) {
+func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, error) {
 	row := q.db.QueryRowContext(ctx, createPost, arg.UserID, arg.Title, arg.Content)
-	var i CreatePostRow
+	var i Post
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.Title,
 		&i.Content,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

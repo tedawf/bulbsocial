@@ -85,13 +85,8 @@ func (s *Server) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := struct {
-		UserID    int64     `json:"user_id"`
-		Username  string    `json:"username"`
-		Email     string    `json:"email"`
-		CreatedAt time.Time `json:"password"`
-	}{
-		UserID:    user.ID,
+	res := UserResponse{
+		ID:        user.ID,
 		Username:  user.Username,
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt,

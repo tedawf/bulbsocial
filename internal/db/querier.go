@@ -10,7 +10,7 @@ import (
 
 type Querier interface {
 	CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error)
-	CreatePost(ctx context.Context, arg CreatePostParams) (CreatePostRow, error)
+	CreatePost(ctx context.Context, arg CreatePostParams) (Post, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteComment(ctx context.Context, id int64) error
 	DeletePost(ctx context.Context, id int64) error

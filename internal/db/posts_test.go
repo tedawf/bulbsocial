@@ -6,22 +6,23 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/tedawf/bulbsocial/internal/util"
 )
 
-func CreateRandomTestPost(t *testing.T) CreatePostRow {
+func CreateRandomTestPost(t *testing.T) Post {
 	arg := CreatePostParams{
-		UserID:  CreateRandomTestUser(t).ID,
-		Title:   RandomTitle(),
-		Content: RandomContent(),
+		UserID:  createRandomTestUser(t).ID,
+		Title:   util.RandomTitle(),
+		Content: util.RandomContent(),
 	}
 
 	post, err := testQueries.CreatePost(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, post)
 
-	require.Equal(t, arg.Content, post.Content)
-	require.Equal(t, arg.Title, post.Title)
 	require.Equal(t, arg.UserID, post.UserID)
+	require.Equal(t, arg.Title, post.Title)
+	require.Equal(t, arg.Content, post.Content)
 
 	return post
 }
@@ -46,8 +47,8 @@ func TestUpdatePost(t *testing.T) {
 
 	arg := UpdatePostParams{
 		ID:      post1.ID,
-		Title:   RandomTitle(),
-		Content: RandomContent(),
+		Title:   util.RandomTitle(),
+		Content: util.RandomContent(),
 	}
 
 	err := testQueries.UpdatePost(context.Background(), arg)

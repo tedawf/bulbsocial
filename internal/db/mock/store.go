@@ -57,10 +57,10 @@ func (mr *MockStoreMockRecorder) CreateComment(ctx, arg any) *gomock.Call {
 }
 
 // CreatePost mocks base method.
-func (m *MockStore) CreatePost(ctx context.Context, arg db.CreatePostParams) (db.CreatePostRow, error) {
+func (m *MockStore) CreatePost(ctx context.Context, arg db.CreatePostParams) (db.Post, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreatePost", ctx, arg)
-	ret0, _ := ret[0].(db.CreatePostRow)
+	ret0, _ := ret[0].(db.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -388,10 +388,10 @@ func (mr *MockQuerierMockRecorder) CreateComment(ctx, arg any) *gomock.Call {
 }
 
 // CreatePost mocks base method.
-func (m *MockQuerier) CreatePost(ctx context.Context, arg db.CreatePostParams) (db.CreatePostRow, error) {
+func (m *MockQuerier) CreatePost(ctx context.Context, arg db.CreatePostParams) (db.Post, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreatePost", ctx, arg)
-	ret0, _ := ret[0].(db.CreatePostRow)
+	ret0, _ := ret[0].(db.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

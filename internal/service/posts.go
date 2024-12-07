@@ -14,7 +14,7 @@ func NewPostService(store db.Store) *PostService {
 	return &PostService{store: store}
 }
 
-func (p *PostService) CreatePost(ctx context.Context, params db.CreatePostParams) (db.CreatePostRow, error) {
+func (p *PostService) CreatePost(ctx context.Context, params db.CreatePostParams) (db.Post, error) {
 	return p.store.CreatePost(ctx, params)
 }
 

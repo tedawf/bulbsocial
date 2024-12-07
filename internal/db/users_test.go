@@ -8,11 +8,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/tedawf/bulbsocial/internal/auth"
+	"github.com/tedawf/bulbsocial/internal/util"
 )
 
-func CreateRandomTestUser(t *testing.T) User {
-	username := RandomUsername()
-	hashedPassword, err := auth.HashPassword(RandomString(10))
+func createRandomTestUser(t *testing.T) User {
+	username := util.RandomUsername()
+	hashedPassword, err := auth.HashPassword(util.RandomString(10))
 	require.NoError(t, err)
 
 	arg := CreateUserParams{
@@ -36,11 +37,11 @@ func CreateRandomTestUser(t *testing.T) User {
 }
 
 func TestCreateUser(t *testing.T) {
-	CreateRandomTestUser(t)
+	createRandomTestUser(t)
 }
 
 func TestGetUserByID(t *testing.T) {
-	user1 := CreateRandomTestUser(t)
+	user1 := createRandomTestUser(t)
 	user2, err := testQueries.GetUserByID(context.Background(), user1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
@@ -53,8 +54,8 @@ func TestGetUserByID(t *testing.T) {
 }
 
 func TestUpdateUserPassword(t *testing.T) {
-	user1 := CreateRandomTestUser(t)
-	hashedPassword, err := auth.HashPassword(RandomString(10))
+	user1 := createRandomTestUser(t)
+	hashedPassword, err := auth.HashPassword(util.RandomString(10))
 	require.NoError(t, err)
 
 	arg := UpdateUserPasswordParams{
@@ -67,7 +68,7 @@ func TestUpdateUserPassword(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
-	user1 := CreateRandomTestUser(t)
+	user1 := createRandomTestUser(t)
 	err := testQueries.DeleteUser(context.Background(), user1.ID)
 	require.NoError(t, err)
 

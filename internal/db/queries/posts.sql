@@ -8,7 +8,8 @@ RETURNING
     user_id,
     title,
     content,
-    created_at;
+    created_at,
+    updated_at;
 
 -- name: GetPostByID :one
 SELECT

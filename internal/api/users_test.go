@@ -10,24 +10,19 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
-	"time"
 
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 	"github.com/tedawf/bulbsocial/internal/auth"
 	"github.com/tedawf/bulbsocial/internal/db"
 	mockdb "github.com/tedawf/bulbsocial/internal/db/mock"
+	"github.com/tedawf/bulbsocial/internal/util"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
-func TestGetUser(t *testing.T) {
-	user := db.User{
-		ID:                db.RandomInt(1, 1000),
-		Email:             db.RandomUsername() + "@email.com",
-		Username:          db.RandomUsername(),
-		CreatedAt:         time.Now().Round(time.Second),
-		PasswordChangedAt: sql.NullTime{},
-	}
+func TestGetUserAPI(t *testing.T) {
+	user, _ := randomUser(t)
 
 	testCases := []struct {
 		name          string
@@ -141,8 +136,91 @@ func TestCreateUserAPI(t *testing.T) {
 					Return(user, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				fmt.Println("Response Body:", recorder.Body.String())
 				require.Equal(t, http.StatusCreated, recorder.Code)
 				requireBodyMatchUser(t, recorder.Body, user)
+			},
+		},
+		{
+			name: "InternalError",
+			body: map[string]interface{}{
+				"username": user.Username,
+				"email":    user.Email,
+				"password": password,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					CreateUser(gomock.Any(), gomock.Any()).
+					Times(1).
+					Return(db.User{}, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name: "DuplicateUsername",
+			body: map[string]interface{}{
+				"username": user.Username,
+				"email":    user.Email,
+				"password": password,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					CreateUser(gomock.Any(), gomock.Any()).
+					Times(1).
+					Return(db.User{}, &pq.Error{Code: "23505"}) // unique key violation
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusForbidden, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidUsername",
+			body: map[string]interface{}{
+				"username": "invalid-user#1",
+				"email":    user.Email,
+				"password": password,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					CreateUser(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidEmail",
+			body: map[string]interface{}{
+				"username": user.Username,
+				"email":    "test#user.com",
+				"password": password,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					CreateUser(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "PasswordTooShort",
+			body: map[string]interface{}{
+				"username": user.Username,
+				"email":    user.Email,
+				"password": "123",
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					CreateUser(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 	}
@@ -174,13 +252,14 @@ func TestCreateUserAPI(t *testing.T) {
 }
 
 func randomUser(t *testing.T) (db.User, string) {
-	password := db.RandomString(6)
+	password := util.RandomString(6)
 	hashedPassword, err := auth.HashPassword(password)
 	require.NoError(t, err)
 
 	user := db.User{
-		Username:       db.RandomUsername(),
-		Email:          db.RandomEmail(),
+		ID:             util.RandomInt(1, 1000),
+		Username:       util.RandomUsername(),
+		Email:          util.RandomEmail(),
 		HashedPassword: []byte(hashedPassword),
 	}
 	return user, password
@@ -192,10 +271,13 @@ func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.User) {
 
 	var gotResponse APIResponse[UserResponse]
 	err = json.Unmarshal(data, &gotResponse)
-
 	require.NoError(t, err)
+
+	require.Equal(t, user.ID, gotResponse.Data.ID)
 	require.Equal(t, user.Username, gotResponse.Data.Username)
 	require.Equal(t, user.Email, gotResponse.Data.Email)
+	require.Equal(t, user.CreatedAt, gotResponse.Data.CreatedAt)
+	require.Equal(t, user.PasswordChangedAt, gotResponse.Data.PasswordChangedAt)
 }
 
 type eqCreateUserParamsMatcher struct {
