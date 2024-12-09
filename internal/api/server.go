@@ -16,9 +16,10 @@ import (
 
 // Server serves HTTP requests for our backend service
 type Server struct {
-	router *chi.Mux
-	logger *zap.SugaredLogger
-	config config.Config
+	router     *chi.Mux
+	logger     *zap.SugaredLogger
+	config     config.Config
+	tokenMaker auth.TokenMaker
 
 	userService *service.UserService
 	postService *service.PostService
@@ -56,6 +57,8 @@ func (s *Server) setupMiddlewares() {
 	s.router.Use(middleware.Logger)
 	s.router.Use(middleware.Recoverer)
 	s.router.Use(middleware.Timeout(60 * time.Second))
+
+	s.router.Use(s.tokenAuthMiddleware())
 }
 
 // NewServer creates a new HTTP server with routes and dependencies
@@ -66,9 +69,10 @@ func NewServer(store db.Store, logger *zap.SugaredLogger, config config.Config) 
 	}
 
 	server := &Server{
-		router: chi.NewRouter(),
-		logger: logger,
-		config: config,
+		router:     chi.NewRouter(),
+		logger:     logger,
+		config:     config,
+		tokenMaker: tokenMaker,
 
 		userService: service.NewUserService(store, tokenMaker),
 		postService: service.NewPostService(store),
