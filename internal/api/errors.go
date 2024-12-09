@@ -24,3 +24,8 @@ func (s *Server) notFoundError(w http.ResponseWriter, r *http.Request, err error
 
 	s.respond(w, http.StatusNotFound, "not found", nil)
 }
+func (s *Server) unauthorizedError(w http.ResponseWriter, r *http.Request, err error) {
+	s.logger.Warnw("not found", "method", r.Method, "path", r.URL.Path, "error", err.Error())
+
+	s.respond(w, http.StatusUnauthorized, "unauthorized", nil)
+}

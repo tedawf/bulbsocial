@@ -24,6 +24,19 @@ FROM
 WHERE
     id = $1;
 
+-- name: GetUserByUsername :one
+SELECT
+    id,
+    username,
+    email,
+    hashed_password,
+    created_at,
+    password_changed_at
+FROM
+    users
+WHERE
+    username = $1;
+
 -- name: UpdateUserPassword :exec
 UPDATE users
 SET

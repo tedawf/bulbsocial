@@ -35,7 +35,11 @@ func main() {
 	store := db.NewSQLStore(conn)
 
 	// server
-	server := api.NewServer(store, sugar)
+	server, err := api.NewServer(store, sugar, cfg)
+	if err != nil {
+		sugar.Fatal("cannot create server: ", err)
+	}
+
 	if err = server.Start(cfg.ServerAddress); err != nil {
 		sugar.Fatal("cannot start server: ", err)
 	}

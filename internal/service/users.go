@@ -2,17 +2,19 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/tedawf/bulbsocial/internal/auth"
 	"github.com/tedawf/bulbsocial/internal/db"
 )
 
 type UserService struct {
-	store db.Store
+	store      db.Store
+	tokenMaker auth.TokenMaker
 }
 
-func NewUserService(store db.Store) *UserService {
-	return &UserService{store: store}
+func NewUserService(store db.Store, tokenMaker auth.TokenMaker) *UserService {
+	return &UserService{store: store, tokenMaker: tokenMaker}
 }
 
 func (u *UserService) GetUserByID(ctx context.Context, userID int64) (db.User, error) {
@@ -36,4 +38,23 @@ func (u *UserService) CreateUser(ctx context.Context, username, email, password 
 
 func (u *UserService) DeleteUser(ctx context.Context, userID int64) error {
 	return u.store.DeleteUser(ctx, userID)
+}
+
+func (u *UserService) LoginUser(ctx context.Context, username, password string, duration time.Duration) (db.User, string, error) {
+	user, err := u.store.GetUserByUsername(ctx, username)
+	if err != nil {
+		return db.User{}, "", err
+	}
+
+	err = auth.CheckPassword(string(user.HashedPassword), password)
+	if err != nil {
+		return db.User{}, "", err
+	}
+
+	accessToken, err := u.tokenMaker.CreateToken(user.Username, duration)
+	if err != nil {
+		return db.User{}, "", err
+	}
+
+	return user, accessToken, nil
 }

@@ -10,9 +10,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/lib/pq"
 	"github.com/tedawf/bulbsocial/internal/db"
+	"golang.org/x/crypto/bcrypt"
 )
 
-type UserResponse struct {
+type userResponse struct {
 	ID                int64        `json:"id"`
 	Email             string       `json:"email"`
 	Username          string       `json:"username"`
@@ -20,8 +21,8 @@ type UserResponse struct {
 	PasswordChangedAt sql.NullTime `json:"password_changed_at"`
 }
 
-func NewUserResponse(user db.User) UserResponse {
-	return UserResponse{
+func newUserResponse(user db.User) userResponse {
+	return userResponse{
 		ID:                user.ID,
 		Email:             user.Email,
 		Username:          user.Username,
@@ -48,7 +49,7 @@ func (s *Server) handleGetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := NewUserResponse(user)
+	res := newUserResponse(user)
 
 	if err := s.respond(w, http.StatusOK, "fetched user successfully", res); err != nil {
 		s.internalServerError(w, r, err)
@@ -85,14 +86,52 @@ func (s *Server) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := UserResponse{
-		ID:        user.ID,
-		Username:  user.Username,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-	}
+	res := newUserResponse(user)
 
 	if err := s.respond(w, http.StatusCreated, "created user successfully", res); err != nil {
+		s.internalServerError(w, r, err)
+		return
+	}
+}
+
+func (s *Server) handleLoginUser(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Username string `json:"username" validate:"required,alphanum"`
+		Password string `json:"password" validate:"required,min=6"`
+	}
+
+	if err := s.parse(w, r, &req); err != nil {
+		s.badRequestError(w, r, err)
+		return
+	}
+
+	if err := Validate.Struct(req); err != nil {
+		s.badRequestError(w, r, err)
+		return
+	}
+
+	user, accessToken, err := s.userService.LoginUser(r.Context(), req.Username, req.Password, s.config.AccessTokenDuration)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			s.notFoundError(w, r, err)
+		case bcrypt.ErrMismatchedHashAndPassword:
+			s.unauthorizedError(w, r, err)
+		default:
+			s.internalServerError(w, r, err)
+		}
+		return
+	}
+
+	res := struct {
+		AccessToken string       `json:"access_token"`
+		User        userResponse `json:"user"`
+	}{
+		AccessToken: accessToken,
+		User:        newUserResponse(user),
+	}
+
+	if err := s.respond(w, http.StatusOK, "user login successfully", res); err != nil {
 		s.internalServerError(w, r, err)
 		return
 	}

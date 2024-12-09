@@ -23,6 +23,7 @@ type Querier interface {
 	GetPostByID(ctx context.Context, id int64) (Post, error)
 	GetPostsByUser(ctx context.Context, arg GetPostsByUserParams) ([]Post, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
+	GetUserByUsername(ctx context.Context, username string) (User, error)
 	SearchComments(ctx context.Context, arg SearchCommentsParams) ([]Comment, error)
 	SearchPosts(ctx context.Context, arg SearchPostsParams) ([]Post, error)
 	SearchUsers(ctx context.Context, arg SearchUsersParams) ([]SearchUsersRow, error)

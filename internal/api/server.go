@@ -1,11 +1,14 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/tedawf/bulbsocial/internal/auth"
+	"github.com/tedawf/bulbsocial/internal/config"
 	"github.com/tedawf/bulbsocial/internal/db"
 	"github.com/tedawf/bulbsocial/internal/service"
 	"go.uber.org/zap"
@@ -15,6 +18,7 @@ import (
 type Server struct {
 	router *chi.Mux
 	logger *zap.SugaredLogger
+	config config.Config
 
 	userService *service.UserService
 	postService *service.PostService
@@ -30,6 +34,8 @@ func (s *Server) setupRoutes() {
 		r.Route("/{userID}", func(r chi.Router) {
 			r.Get("/", s.handleGetUser)
 		})
+
+		r.Post("/login", s.handleLoginUser)
 	})
 
 	s.router.Route("/posts", func(r chi.Router) {
@@ -53,19 +59,25 @@ func (s *Server) setupMiddlewares() {
 }
 
 // NewServer creates a new HTTP server with routes and dependencies
-func NewServer(store db.Store, logger *zap.SugaredLogger) *Server {
+func NewServer(store db.Store, logger *zap.SugaredLogger, config config.Config) (*Server, error) {
+	tokenMaker, err := auth.NewJWTMaker(config.AuthTokenKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create token maker: %w", err)
+	}
+
 	server := &Server{
 		router: chi.NewRouter(),
 		logger: logger,
+		config: config,
 
-		userService: service.NewUserService(store),
+		userService: service.NewUserService(store, tokenMaker),
 		postService: service.NewPostService(store),
 	}
 
 	server.setupMiddlewares()
 	server.setupRoutes()
 
-	return server
+	return server, nil
 }
 
 // Start starts the HTTP server on a specified address

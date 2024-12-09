@@ -16,7 +16,6 @@ import (
 	mockdb "github.com/tedawf/bulbsocial/internal/db/mock"
 	"github.com/tedawf/bulbsocial/internal/util"
 	"go.uber.org/mock/gomock"
-	"go.uber.org/zap"
 )
 
 func TestCreatePostAPI(t *testing.T) {
@@ -115,7 +114,7 @@ func TestCreatePostAPI(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := NewServer(store, zap.NewNop().Sugar())
+			server := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -192,7 +191,7 @@ func TestGetPostAPI(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := NewServer(store, zap.NewNop().Sugar())
+			server := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/posts/%s", tc.postID)
