@@ -2,10 +2,17 @@ package service
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/tedawf/bulbsocial/internal/auth"
 	"github.com/tedawf/bulbsocial/internal/db"
+)
+
+var (
+	ErrInvalidCredentials = errors.New("invalid username or password")
 )
 
 type UserService struct {
@@ -43,17 +50,20 @@ func (u *UserService) DeleteUser(ctx context.Context, userID int64) error {
 func (u *UserService) LoginUser(ctx context.Context, username, password string, duration time.Duration) (db.User, string, error) {
 	user, err := u.store.GetUserByUsername(ctx, username)
 	if err != nil {
-		return db.User{}, "", err
+		if err == sql.ErrNoRows {
+			return db.User{}, "", ErrInvalidCredentials
+		}
+		return db.User{}, "", fmt.Errorf("failed to fetch user: %w", err)
 	}
 
 	err = auth.CheckPassword(string(user.HashedPassword), password)
 	if err != nil {
-		return db.User{}, "", err
+		return db.User{}, "", ErrInvalidCredentials
 	}
 
 	accessToken, err := u.tokenMaker.CreateToken(user.Username, duration)
 	if err != nil {
-		return db.User{}, "", err
+		return db.User{}, "", fmt.Errorf("failed to create token: %w", err)
 	}
 
 	return user, accessToken, nil

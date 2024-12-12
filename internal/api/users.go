@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/lib/pq"
 	"github.com/tedawf/bulbsocial/internal/db"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/tedawf/bulbsocial/internal/service"
 )
 
 type userResponse struct {
@@ -63,12 +63,7 @@ func (s *Server) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 		Email    string `json:"email" validate:"required,email"`
 	}
 
-	if err := s.parse(w, r, &req); err != nil {
-		s.badRequestError(w, r, err)
-		return
-	}
-
-	if err := Validate.Struct(req); err != nil {
+	if err := s.parseAndValidate(w, r, &req); err != nil {
 		s.badRequestError(w, r, err)
 		return
 	}
@@ -100,26 +95,18 @@ func (s *Server) handleLoginUser(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password" validate:"required,min=6"`
 	}
 
-	if err := s.parse(w, r, &req); err != nil {
-		s.badRequestError(w, r, err)
-		return
-	}
-
-	if err := Validate.Struct(req); err != nil {
+	if err := s.parseAndValidate(w, r, &req); err != nil {
 		s.badRequestError(w, r, err)
 		return
 	}
 
 	user, accessToken, err := s.userService.LoginUser(r.Context(), req.Username, req.Password, s.config.AccessTokenDuration)
 	if err != nil {
-		switch err {
-		case sql.ErrNoRows:
-			s.notFoundError(w, r, err)
-		case bcrypt.ErrMismatchedHashAndPassword:
+		if err == service.ErrInvalidCredentials {
 			s.unauthorizedError(w, r, err)
-		default:
-			s.internalServerError(w, r, err)
+			return
 		}
+		s.internalServerError(w, r, err)
 		return
 	}
 

@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -40,4 +41,16 @@ func (s *Server) parse(w http.ResponseWriter, r *http.Request, data interface{})
 	decoder.DisallowUnknownFields()
 
 	return decoder.Decode(data)
+}
+
+func (s *Server) parseAndValidate(w http.ResponseWriter, r *http.Request, data interface{}) error {
+	if err := s.parse(w, r, data); err != nil {
+		return fmt.Errorf("error parsing request body: %w", err)
+	}
+
+	if err := Validate.Struct(data); err != nil {
+		return fmt.Errorf("validation error: %w", err)
+	}
+
+	return nil
 }

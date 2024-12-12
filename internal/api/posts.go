@@ -16,12 +16,7 @@ func (s *Server) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 		Content string `json:"content" validate:"required,max=1000"`
 	}
 
-	if err := s.parse(w, r, &req); err != nil {
-		s.badRequestError(w, r, err)
-		return
-	}
-
-	if err := Validate.Struct(req); err != nil {
+	if err := s.parseAndValidate(w, r, &req); err != nil {
 		s.badRequestError(w, r, err)
 		return
 	}
