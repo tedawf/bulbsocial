@@ -70,9 +70,11 @@ func TestTokenAuthMiddleware(t *testing.T) {
 			server := newTestServer(t, nil)
 			authPath := "/auth"
 
-			server.router.Get(authPath, func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
+			server.router.
+				With(server.tokenAuthMiddleware()).
+				Get(authPath, func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusOK)
+				})
 
 			recorder := httptest.NewRecorder()
 			request, err := http.NewRequest(http.MethodGet, authPath, nil)

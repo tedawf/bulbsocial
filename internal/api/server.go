@@ -57,8 +57,6 @@ func (s *Server) setupMiddlewares() {
 	s.router.Use(middleware.Logger)
 	s.router.Use(middleware.Recoverer)
 	s.router.Use(middleware.Timeout(60 * time.Second))
-
-	s.router.Use(s.tokenAuthMiddleware())
 }
 
 // NewServer creates a new HTTP server with routes and dependencies
