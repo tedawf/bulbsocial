@@ -61,7 +61,7 @@ func (u *UserService) LoginUser(ctx context.Context, username, password string, 
 		return db.User{}, "", ErrInvalidCredentials
 	}
 
-	accessToken, err := u.tokenMaker.CreateToken(user.Username, duration)
+	accessToken, err := u.tokenMaker.CreateToken(user.ID, duration)
 	if err != nil {
 		return db.User{}, "", fmt.Errorf("failed to create token: %w", err)
 	}

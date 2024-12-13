@@ -1,17 +1,18 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/tedawf/bulbsocial/internal/auth"
 	"github.com/tedawf/bulbsocial/internal/db"
 	"github.com/tedawf/bulbsocial/internal/service"
 )
 
 func (s *Server) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		UserID  int64  `json:"user_id" validate:"gt=0"` // todo: get postID from auth
 		Title   string `json:"title" validate:"required,max=100"`
 		Content string `json:"content" validate:"required,max=1000"`
 	}
@@ -21,8 +22,11 @@ func (s *Server) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
+	authPayload := ctx.Value(authorizationPayloadKey).(*auth.Payload)
+
 	params := db.CreatePostParams{
-		UserID:  req.UserID,
+		UserID:  authPayload.UserID,
 		Title:   req.Title,
 		Content: req.Content,
 	}
@@ -53,6 +57,14 @@ func (s *Server) handleGetPost(w http.ResponseWriter, r *http.Request) {
 	post, err := s.postService.GetPostByID(r.Context(), postID)
 	if err != nil {
 		s.notFoundError(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+	authPayload := ctx.Value(authorizationPayloadKey).(*auth.Payload)
+	if post.UserID != authPayload.UserID {
+		err := errors.New("post does not belong to the authenticated user")
+		s.unauthorizedError(w, r, err)
 		return
 	}
 
