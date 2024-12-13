@@ -40,6 +40,8 @@ func (s *Server) setupRoutes() {
 	})
 
 	s.router.Route("/posts", func(r chi.Router) {
+		r.Use(s.tokenAuthMiddleware())
+
 		r.Post("/", s.handleCreatePost)
 
 		r.Route("/{postID}", func(r chi.Router) {

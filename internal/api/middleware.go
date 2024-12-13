@@ -23,7 +23,7 @@ func (s *Server) tokenAuthMiddleware() func(http.Handler) http.Handler {
 			}
 
 			fields := strings.Fields(authHeader)
-			if len(fields) != 2 || fields[0] != authorizationTypeBearer {
+			if len(fields) != 2 || strings.ToLower(fields[0]) != authorizationTypeBearer {
 				s.unauthorizedError(w, r, fmt.Errorf("invalid auth header"))
 				return
 			}

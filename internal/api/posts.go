@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/lib/pq"
 	"github.com/tedawf/bulbsocial/internal/db"
+	"github.com/tedawf/bulbsocial/internal/service"
 )
 
 func (s *Server) handleCreatePost(w http.ResponseWriter, r *http.Request) {
@@ -29,12 +29,9 @@ func (s *Server) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 
 	post, err := s.postService.CreatePost(r.Context(), params)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name() {
-			case "foreign_key_violation", "unique_violation":
-				s.forbiddenError(w, r, err)
-				return
-			}
+		if err == service.ErrUserNotFound {
+			s.forbiddenError(w, r, err)
+			return
 		}
 		s.internalServerError(w, r, err)
 		return
