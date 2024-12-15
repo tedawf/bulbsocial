@@ -27,7 +27,7 @@ type Querier interface {
 	SearchComments(ctx context.Context, arg SearchCommentsParams) ([]Comment, error)
 	SearchPosts(ctx context.Context, arg SearchPostsParams) ([]Post, error)
 	SearchUsers(ctx context.Context, arg SearchUsersParams) ([]SearchUsersRow, error)
-	UnfollowUser(ctx context.Context, arg UnfollowUserParams) error
+	UnfollowUser(ctx context.Context, arg UnfollowUserParams) (int64, error)
 	UpdatePost(ctx context.Context, arg UpdatePostParams) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 }

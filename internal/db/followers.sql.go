@@ -14,7 +14,6 @@ INSERT INTO
     followers (follower_id, followee_id)
 VALUES
     ($1, $2)
-ON CONFLICT DO NOTHING
 `
 
 type FollowUserParams struct {
@@ -115,11 +114,13 @@ func (q *Queries) GetFollowers(ctx context.Context, arg GetFollowersParams) ([]i
 	return items, nil
 }
 
-const unfollowUser = `-- name: UnfollowUser :exec
+const unfollowUser = `-- name: UnfollowUser :execrows
 DELETE FROM followers
 WHERE
     follower_id = $1
     AND followee_id = $2
+RETURNING
+    1
 `
 
 type UnfollowUserParams struct {
@@ -127,7 +128,10 @@ type UnfollowUserParams struct {
 	FolloweeID int64 `json:"followee_id"`
 }
 
-func (q *Queries) UnfollowUser(ctx context.Context, arg UnfollowUserParams) error {
-	_, err := q.db.ExecContext(ctx, unfollowUser, arg.FollowerID, arg.FolloweeID)
-	return err
+func (q *Queries) UnfollowUser(ctx context.Context, arg UnfollowUserParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, unfollowUser, arg.FollowerID, arg.FolloweeID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

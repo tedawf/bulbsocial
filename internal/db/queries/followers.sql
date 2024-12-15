@@ -2,14 +2,15 @@
 INSERT INTO
     followers (follower_id, followee_id)
 VALUES
-    ($1, $2)
-ON CONFLICT DO NOTHING;
+    ($1, $2);
 
--- name: UnfollowUser :exec
+-- name: UnfollowUser :execrows
 DELETE FROM followers
 WHERE
     follower_id = $1
-    AND followee_id = $2;
+    AND followee_id = $2
+RETURNING
+    1;
 
 -- name: GetFollowers :many
 SELECT

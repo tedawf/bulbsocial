@@ -33,7 +33,11 @@ func (s *Server) setupRoutes() {
 		r.Post("/", s.handleCreateUser)
 
 		r.Route("/{userID}", func(r chi.Router) {
+			r.Use(s.tokenAuthMiddleware())
+
 			r.Get("/", s.handleGetUser)
+			r.Post("/follow", s.handleFollowUser)
+			r.Post("/unfollow", s.handleUnfollowUser)
 		})
 
 		r.Post("/login", s.handleLoginUser)

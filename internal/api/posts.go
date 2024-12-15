@@ -33,7 +33,7 @@ func (s *Server) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 
 	post, err := s.postService.CreatePost(r.Context(), params)
 	if err != nil {
-		if err == service.ErrUserNotFound {
+		if errors.Is(err, service.ErrUserNotFound) {
 			s.forbiddenError(w, r, err)
 			return
 		}
@@ -41,7 +41,9 @@ func (s *Server) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.respond(w, http.StatusCreated, "created post successfully", post)
+	if err := s.respond(w, http.StatusCreated, "created post successfully", post); err != nil {
+		s.internalServerError(w, r, err)
+	}
 }
 
 func (s *Server) handleGetPost(w http.ResponseWriter, r *http.Request) {
@@ -59,13 +61,16 @@ func (s *Server) handleGetPost(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	authPayload := ctx.Value(authorizationPayloadKey).(*auth.Payload)
+
 	if post.UserID != authPayload.UserID {
 		err := errors.New("post does not belong to the authenticated user")
 		s.unauthorizedError(w, r, err)
 		return
 	}
 
-	s.respond(w, http.StatusOK, "fetched post successfully", post)
+	if err := s.respond(w, http.StatusOK, "fetched post successfully", post); err != nil {
+		s.internalServerError(w, r, err)
+	}
 }
 
 func (s *Server) handleGetFeed(w http.ResponseWriter, r *http.Request) {
@@ -88,5 +93,7 @@ func (s *Server) handleGetFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.respond(w, http.StatusOK, "fetched all posts successfully", posts)
+	if err := s.respond(w, http.StatusOK, "fetched all posts successfully", posts); err != nil {
+		s.internalServerError(w, r, err)
+	}
 }

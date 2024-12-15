@@ -322,11 +322,12 @@ func (mr *MockStoreMockRecorder) SearchUsers(ctx, arg any) *gomock.Call {
 }
 
 // UnfollowUser mocks base method.
-func (m *MockStore) UnfollowUser(ctx context.Context, arg db.UnfollowUserParams) error {
+func (m *MockStore) UnfollowUser(ctx context.Context, arg db.UnfollowUserParams) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UnfollowUser", ctx, arg)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // UnfollowUser indicates an expected call of UnfollowUser.
@@ -654,11 +655,12 @@ func (mr *MockQuerierMockRecorder) SearchUsers(ctx, arg any) *gomock.Call {
 }
 
 // UnfollowUser mocks base method.
-func (m *MockQuerier) UnfollowUser(ctx context.Context, arg db.UnfollowUserParams) error {
+func (m *MockQuerier) UnfollowUser(ctx context.Context, arg db.UnfollowUserParams) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UnfollowUser", ctx, arg)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // UnfollowUser indicates an expected call of UnfollowUser.

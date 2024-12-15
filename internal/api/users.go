@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lib/pq"
+	"github.com/tedawf/bulbsocial/internal/auth"
 	"github.com/tedawf/bulbsocial/internal/db"
 	"github.com/tedawf/bulbsocial/internal/service"
 )
@@ -50,7 +52,9 @@ func (s *Server) handleGetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := newUserResponse(user)
-	s.respond(w, http.StatusOK, "fetched user successfully", res)
+	if err := s.respond(w, http.StatusOK, "fetched user successfully", res); err != nil {
+		s.internalServerError(w, r, err)
+	}
 }
 
 func (s *Server) handleCreateUser(w http.ResponseWriter, r *http.Request) {
@@ -79,7 +83,9 @@ func (s *Server) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := newUserResponse(user)
-	s.respond(w, http.StatusCreated, "created user successfully", res)
+	if err := s.respond(w, http.StatusCreated, "created user successfully", res); err != nil {
+		s.internalServerError(w, r, err)
+	}
 }
 
 func (s *Server) handleLoginUser(w http.ResponseWriter, r *http.Request) {
@@ -111,5 +117,73 @@ func (s *Server) handleLoginUser(w http.ResponseWriter, r *http.Request) {
 		User:        newUserResponse(user),
 	}
 
-	s.respond(w, http.StatusOK, "user login successfully", res)
+	if err := s.respond(w, http.StatusOK, "user login successfully", res); err != nil {
+		s.internalServerError(w, r, err)
+	}
+}
+
+func (s *Server) handleFollowUser(w http.ResponseWriter, r *http.Request) {
+	userIDStr := chi.URLParam(r, "userID")
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		s.badRequestError(w, r, fmt.Errorf("invalid user ID: %w", err))
+		return
+	}
+
+	ctx := r.Context()
+	authPayload := ctx.Value(authorizationPayloadKey).(*auth.Payload)
+
+	if authPayload.UserID == userID {
+		err = errors.New("cannot follow yourself")
+		s.badRequestError(w, r, err)
+		return
+	}
+
+	err = s.userService.FollowUser(ctx, authPayload.UserID, userID)
+	if err != nil {
+		if errors.Is(err, service.ErrUserNotFound) {
+			s.notFoundError(w, r, err)
+			return
+		}
+		if errors.Is(err, service.ErrAlreadyFollowing) {
+			s.conflictError(w, r, err)
+			return
+		}
+		s.internalServerError(w, r, err)
+		return
+	}
+
+	if err := s.respond(w, http.StatusCreated, "success", "followed user successfully"); err != nil {
+		s.internalServerError(w, r, err)
+	}
+}
+
+func (s *Server) handleUnfollowUser(w http.ResponseWriter, r *http.Request) {
+	userIDStr := chi.URLParam(r, "userID")
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		s.badRequestError(w, r, fmt.Errorf("invalid user ID: %w", err))
+		return
+	}
+
+	ctx := r.Context()
+	authPayload := ctx.Value(authorizationPayloadKey).(*auth.Payload)
+
+	err = s.userService.UnfollowUser(ctx, authPayload.UserID, userID)
+	if err != nil {
+		if errors.Is(err, service.ErrUserNotFound) {
+			s.notFoundError(w, r, err)
+			return
+		}
+		if errors.Is(err, service.ErrNotFollowing) {
+			s.conflictError(w, r, err)
+			return
+		}
+		s.internalServerError(w, r, err)
+		return
+	}
+
+	if err := s.respond(w, http.StatusOK, "success", "unfollowed user successfully"); err != nil {
+		s.internalServerError(w, r, err)
+	}
 }

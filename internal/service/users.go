@@ -7,12 +7,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/lib/pq"
 	"github.com/tedawf/bulbsocial/internal/auth"
 	"github.com/tedawf/bulbsocial/internal/db"
 )
 
 var (
 	ErrInvalidCredentials = errors.New("invalid username or password")
+	ErrAlreadyFollowing   = errors.New("already following user")
+	ErrNotFollowing       = errors.New("not following user")
 )
 
 type UserService struct {
@@ -67,4 +70,37 @@ func (u *UserService) LoginUser(ctx context.Context, username, password string, 
 	}
 
 	return user, accessToken, nil
+}
+
+func (u *UserService) FollowUser(ctx context.Context, followerID int64, followeeID int64) error {
+	_, err := u.store.GetUserByID(ctx, followeeID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return ErrUserNotFound
+		}
+		return err
+	}
+
+	err = u.store.FollowUser(ctx, db.FollowUserParams{FollowerID: followerID, FolloweeID: followeeID})
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code.Name() == "unique_violation" {
+			return ErrAlreadyFollowing
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserService) UnfollowUser(ctx context.Context, followerID, followeeID int64) error {
+	rowsAffected, err := s.store.UnfollowUser(ctx, db.UnfollowUserParams{FollowerID: followerID, FolloweeID: followeeID})
+	if err != nil {
+		return fmt.Errorf("could not unfollow user: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return ErrNotFollowing
+	}
+
+	return nil
 }
