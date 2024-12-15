@@ -26,11 +26,9 @@ func (p *PostService) CreatePost(ctx context.Context, params db.CreatePostParams
 			switch pqErr.Code.Name() {
 			case "foreign_key_violation":
 				return db.Post{}, ErrUserNotFound
-			default:
-				return db.Post{}, fmt.Errorf("unable to create post: %w", err)
 			}
-
 		}
+		return db.Post{}, fmt.Errorf("unable to create post: %w", err)
 	}
 	return post, nil
 }

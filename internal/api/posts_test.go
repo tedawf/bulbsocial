@@ -9,9 +9,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
+	"github.com/tedawf/bulbsocial/internal/auth"
 	"github.com/tedawf/bulbsocial/internal/db"
 	mockdb "github.com/tedawf/bulbsocial/internal/db/mock"
 	"github.com/tedawf/bulbsocial/internal/util"
@@ -25,15 +27,18 @@ func TestCreatePostAPI(t *testing.T) {
 	testCases := []struct {
 		name          string
 		body          map[string]interface{}
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker auth.TokenMaker)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
 			body: map[string]interface{}{
-				"user_id": user.ID,
 				"title":   post.Title,
 				"content": post.Content,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker auth.TokenMaker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.CreatePostParams{
@@ -54,9 +59,11 @@ func TestCreatePostAPI(t *testing.T) {
 		{
 			name: "InternalError",
 			body: map[string]interface{}{
-				"user_id": user.ID,
 				"title":   post.Title,
 				"content": post.Content,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker auth.TokenMaker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -71,6 +78,9 @@ func TestCreatePostAPI(t *testing.T) {
 		{
 			name: "BadRequest",
 			body: map[string]interface{}{},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker auth.TokenMaker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					CreatePost(gomock.Any(), gomock.Any()).
@@ -83,13 +93,15 @@ func TestCreatePostAPI(t *testing.T) {
 		{
 			name: "NoSuchUser",
 			body: map[string]interface{}{
-				"user_id": user.ID,
 				"title":   post.Title,
 				"content": post.Content,
 			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker auth.TokenMaker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, 1, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.CreatePostParams{
-					UserID:  user.ID,
+					UserID:  1,
 					Title:   post.Title,
 					Content: post.Content,
 				}
@@ -124,6 +136,7 @@ func TestCreatePostAPI(t *testing.T) {
 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 			require.NoError(t, err)
 
+			tc.setupAuth(t, request, server.tokenMaker)
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(recorder)
 		})
@@ -137,12 +150,16 @@ func TestGetPostAPI(t *testing.T) {
 	testCases := []struct {
 		name          string
 		postID        string
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker auth.TokenMaker)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:   "OK",
 			postID: fmt.Sprintf("%d", post.ID),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker auth.TokenMaker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetPostByID(gomock.Any(), gomock.Eq(post.ID)).
@@ -157,6 +174,9 @@ func TestGetPostAPI(t *testing.T) {
 		{
 			name:   "InvalidID",
 			postID: "abc",
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker auth.TokenMaker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetPostByID(gomock.Any(), gomock.Any()).
@@ -169,6 +189,9 @@ func TestGetPostAPI(t *testing.T) {
 		{
 			name:   "NotFound",
 			postID: fmt.Sprintf("%d", post.ID),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker auth.TokenMaker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetPostByID(gomock.Any(), gomock.Eq(post.ID)).
@@ -177,6 +200,22 @@ func TestGetPostAPI(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name:   "UnauthorizedUser",
+			postID: fmt.Sprintf("%d", post.ID),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker auth.TokenMaker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, 1, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetPostByID(gomock.Any(), gomock.Eq(post.ID)).
+					Times(1).
+					Return(post, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
 	}
@@ -198,6 +237,7 @@ func TestGetPostAPI(t *testing.T) {
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
+			tc.setupAuth(t, request, server.tokenMaker)
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(recorder)
 		})

@@ -50,10 +50,7 @@ func (s *Server) handleGetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := newUserResponse(user)
-
-	if err := s.respond(w, http.StatusOK, "fetched user successfully", res); err != nil {
-		s.internalServerError(w, r, err)
-	}
+	s.respond(w, http.StatusOK, "fetched user successfully", res)
 }
 
 func (s *Server) handleCreateUser(w http.ResponseWriter, r *http.Request) {
@@ -82,11 +79,7 @@ func (s *Server) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := newUserResponse(user)
-
-	if err := s.respond(w, http.StatusCreated, "created user successfully", res); err != nil {
-		s.internalServerError(w, r, err)
-		return
-	}
+	s.respond(w, http.StatusCreated, "created user successfully", res)
 }
 
 func (s *Server) handleLoginUser(w http.ResponseWriter, r *http.Request) {
@@ -118,8 +111,5 @@ func (s *Server) handleLoginUser(w http.ResponseWriter, r *http.Request) {
 		User:        newUserResponse(user),
 	}
 
-	if err := s.respond(w, http.StatusOK, "user login successfully", res); err != nil {
-		s.internalServerError(w, r, err)
-		return
-	}
+	s.respond(w, http.StatusOK, "user login successfully", res)
 }

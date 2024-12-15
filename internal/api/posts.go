@@ -41,10 +41,7 @@ func (s *Server) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.respond(w, http.StatusCreated, "created post successfully", post); err != nil {
-		s.internalServerError(w, r, err)
-		return
-	}
+	s.respond(w, http.StatusCreated, "created post successfully", post)
 }
 
 func (s *Server) handleGetPost(w http.ResponseWriter, r *http.Request) {
@@ -68,9 +65,7 @@ func (s *Server) handleGetPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.respond(w, http.StatusOK, "fetched post successfully", post); err != nil {
-		s.internalServerError(w, r, err)
-	}
+	s.respond(w, http.StatusOK, "fetched post successfully", post)
 }
 
 func (s *Server) handleGetFeed(w http.ResponseWriter, r *http.Request) {
@@ -93,7 +88,5 @@ func (s *Server) handleGetFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.respond(w, http.StatusOK, "fetched all posts successfully", posts); err != nil {
-		s.internalServerError(w, r, err)
-	}
+	s.respond(w, http.StatusOK, "fetched all posts successfully", posts)
 }
